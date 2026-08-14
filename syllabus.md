@@ -1,11 +1,12 @@
 ---
 layout: page
-title: About
+title: Syllabus
+nav_exclude: true
 description: >-
-    Course policies and information.
+    Course syllabus.
 ---
 
-# About
+# Syllabus
 {:.no_toc}
 
 ## Table of contents
