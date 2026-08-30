@@ -1,8 +1,8 @@
 ---
 layout: page
-title: Staff
+title: 1. Introduction
 nav_exclude: true
-description: A listing of all the course staff members.
+description: Introduction and Course Overview.
 ---
 
 # Staff

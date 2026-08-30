@@ -1,5 +1,8 @@
 ---
 title: Introduction to Java
+# parent: About
+# permalink: /modules/week-01/
+# nav_order: 1
 ---
 
 Sep 28

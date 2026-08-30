@@ -38,6 +38,7 @@ footer_content:
 collections:
   staffers:
   modules:
+    output: true
   schedules:
   announcements:
 # Default layouts for each collection type
@@ -54,7 +55,7 @@ defaults:
       path: ''
       type: modules
     values:
-      layout: module
+      layout: default
   - scope:
       path: ''
       type: schedules
