@@ -1,5 +1,6 @@
 ---
 title: Week 3
+nav_exclude: true
 description: >-
     Week 3 activities
 ---

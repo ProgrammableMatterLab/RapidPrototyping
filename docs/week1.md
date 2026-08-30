@@ -1,5 +1,6 @@
 ---
 title: Week 1
+nav_exclude: true
 description: >-
     Week 1 activities
 ---
