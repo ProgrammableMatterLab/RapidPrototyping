@@ -78,3 +78,11 @@ compress_html:
 liquid:
   error_mode: strict
   strict_filters: true
+
+callouts:
+  highlight:
+    title: Tip
+    color: yellow
+  important:
+    title: Important
+    color: blue
