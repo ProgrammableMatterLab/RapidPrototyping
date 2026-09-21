@@ -10,7 +10,14 @@ seo:
 
 # AA 598: Digital Fabrication and Rapid Prototyping
 
-This website is under development. 
+
+This is the website for class AA 598: Digital Fabrication and Rapid Prototyping, Autumn 2026.
+
+It will be updated weekly with class content when the quarter begins. 
+
+Please see the [About]({{ '/about/' | relative_url }}) page for a general overview of the class.
+Please see the [Syllabus]({{ '/syllabus/' | relative_url }}) page for more detailed information.
+
 
 [//]: # - [about](about.md),
 [//]: # - a [course calendar](calendar.md),

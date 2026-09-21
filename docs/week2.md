@@ -1,5 +1,6 @@
 ---
 title: Week 2
+nav_order: 4
 nav_exclude: true
 description: >-
     Week 2 activities
@@ -112,12 +113,13 @@ At a minimum, you should complete:
 1. Photos taken of your laser-cut parts
 1. A photo of your physical mouse. It should have an appropriate size and shape (e.g. box-shaped), be laser cut with joints (e.g. finger joints) to allow friction-fit mating of parts, and feature a rastering (ideally to visualize features difficult to cut, e.g. buttons). 
 
-As a bonus, you can try:
+For full credit, you can try some of the following:
 1. Make a mouse that is more complex than a simple (box-shaped) rectangular prism by joining several box-like structures.
 1. Try an entirely different architecture using stacked slices or slotted slices; see inspiration on this [U Greenwich blog](https://blogs.gre.ac.uk/architecture/2013/08/21/laser-cut-3d-sliced-models/).
 1. Raster additional visual features on to your mouse.
 1. Make cuts and partition your laser-cut panels to allow the mouse PCB to be easily inserted, and for the USB cable to exit the enclosure.
 1. Incorporate a living hinge into your mouse to allow partial assembly by folding. See this [Brief Ponoko overview](https://www.ponoko.com/blog/how-to-make/how-to-design-a-living-hinge/) and these [Instructables examples](https://www.instructables.com/Curved-laser-bent-wood/) 
+1. Instead of a mouse, incorporate some of these "advanced" features into an entirely different model of your choosing.
 
 In your documentation, you should  discuss the development of your work; your design decisions, things you tried that did or didn't work, helpful resources you used, suprising outcomes etc.
 

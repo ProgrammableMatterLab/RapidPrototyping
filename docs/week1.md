@@ -1,5 +1,6 @@
 ---
 title: Week 1
+nav_order: 3
 nav_exclude: true
 description: >-
     Week 1 activities
@@ -115,7 +116,7 @@ At a minimum, you should complete:
 1. An associated BOM.
 1. A feature analysis table with at least 3 rows added to the example below.
 
-As a bonus, you can try:
+For full credit, you can try:
 1. Remove the background from individual images to produce a crisp, clean teardown figure.
 1. Add more feature rows to your feature analysis table.
 1. Comment on how these features, for a mass-manufactured mouse, might hold or be modified for single-unit prototypes we make using 3D printing and laser cutting

@@ -1,12 +1,12 @@
 ---
-title: Week 4
-nav_order: 6
+title: Week 5
+nav_order: 7
 nav_exclude: true
 description: >-
-    Week 4 activities
+    Week 5 activities
 ---
 
-# Week 4 - Joining and mechanisms
+# Week 5 - Electronics
 {:.no_toc}
 
 ## Table of contents
@@ -22,9 +22,7 @@ description: >-
 
 ### Tutorials / Readings
 
-1. *TBC - More Onshape tutorials*{: .text-red-300 }
-1. *Assembly readings*{: .text-red-300 }
-1. *Soldering for heat sets?*{: .text-red-300 }
+1. *Coming soon*{: .text-red-300 }
 
 ### [Optional] Further resources
 *Coming soon*{: .text-red-300 }
@@ -35,19 +33,13 @@ description: >-
 *Coming soon*{: .text-red-300 }
 
 
-Formlabs' reference for [fasteners and inserts for 3D printed parts](https://formlabs.com/blog/adding-screw-threads-3d-printed-parts/).
-
 ## Hardware & Software
 
 
 ### Hardware
 
-#### 3D Printers
-*Coming soon*{: .text-red-300 }
-
 #### Soldering irons
 *Coming soon. Also mention need safety glasses for soldering*{: .text-red-300 }
-
 
 
 ## Lab
