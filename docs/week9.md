@@ -9,20 +9,25 @@ description: >-
 # Week 9 - Initial Design Review 
 {:.no_toc}
 
-## Table of contents
-{: .no_toc .text-delta }
-
+<details markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
 1. TOC
 {:toc}
+</details>
 
 ---
 ## Readings & Preparation
 
-*Coming soon. Initial Design Review and Project Presentation Guidelines/Format*{: .text-red-300 }
+*Coming soon*{: .text-red-300 }
+
+[//]: # *Coming soon. Initial Design Review and Project Presentation Guidelines/Format*{: .text-red-300 }
 
 ### Tutorials / Readings
 
-1. *Coming soon*{: .text-red-300 }
+*Coming soon*{: .text-red-300 }
 
 ### [Optional] Further resources
 *Coming soon*{: .text-red-300 }
@@ -36,10 +41,7 @@ description: >-
 ## Hardware & Software
 
 
-### Hardware
-
-
-### Software
+*Coming soon*{: .text-red-300 }
 
 
 ## Lab

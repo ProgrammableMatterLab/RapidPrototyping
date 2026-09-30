@@ -9,12 +9,14 @@ description: >-
 # Week 8 - Project integration & Machine Building
 {:.no_toc}
 
-## Table of contents
-{: .no_toc .text-delta }
-
+<details markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
 1. TOC
 {:toc}
-
+</details>
 ---
 ## Readings & Preparation
 
@@ -22,7 +24,7 @@ description: >-
 
 ### Tutorials / Readings
 
-1. *Coming soon*{: .text-red-300 }
+*Coming soon*{: .text-red-300 }
 
 ### [Optional] Further resources
 *Coming soon*{: .text-red-300 }
@@ -30,19 +32,19 @@ description: >-
 
 ## Lecture
 
-*Idea discussion of “fantasy device” google form idea upload, and then discuss in class to share ideas, discuss time feasability, BOM required, how to build, risk mitigation.*{: .text-red-300 }
+*Coming soon*{: .text-red-300 }
+
+[//]: # *Idea discussion of “fantasy device” google form idea upload, and then discuss in class to share ideas, discuss time feasability, BOM required, how to build, risk mitigation.*{: .text-red-300 }
 
 
-*Project Integration; CAD assembly with electronics (either imported CAD or simple proxy), con ops for use, block diagrams, schematics, also useful tools like heat set inserts, electrical tape insulation....Machine Overview as Example and Lab overview*{: .text-red-300 }
+[//]: # *Project Integration; CAD assembly with electronics (either imported CAD or simple proxy), con ops for use, block diagrams, schematics, also useful tools like heat set inserts, electrical tape insulation....Machine Overview as Example and Lab overview*{: .text-red-300 }
 
 
 ## Hardware & Software
 
 
-### Hardware
+*Coming soon*{: .text-red-300 }
 
-
-### Software
 
 
 ## Lab
