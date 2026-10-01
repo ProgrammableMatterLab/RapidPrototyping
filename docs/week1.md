@@ -34,6 +34,8 @@ In this lecture, we will:
 
 [//]: # After the lecture, the slides will be posted *HERE.*{: .text-red-300 }
 
+You can access the Lecture 1 slides here: [Lecture 1 slides](https://docs.google.com/presentation/d/1HxGuSn9HivAXN2vG9lufGPbGxU2jd6hXPYyPewuIS18/edit?usp=sharing).
+
 ## Hardware & Software
 
 
