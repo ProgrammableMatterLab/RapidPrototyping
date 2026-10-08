@@ -50,6 +50,10 @@ Since last week, you've dis-assembled and documented a mass-manufactured mouse. 
 
 [//]: # After the lecture, the slides will be posted *HERE.*{: .text-red-300 }
 
+You can access the Lecture 2 slides here: [Lecture 2 slides](https://docs.google.com/presentation/d/1xbMsExdiqX3PPyvGUy5tcjSxUHdaQ9Ucoo6D1ipQ5zQ/edit?usp=drive_link).
+
+
+
 ## Hardware & Software
 
 
@@ -109,9 +113,7 @@ To succeed on the assignment task, your goal during the lab should be to design 
 ## Assignments
 
 1. **Task:** Complete this week's Task and publish your documentation on your Google Site.
-1. **Reading:** *Coming soon*{: .text-red-300 }
-
-[//]: # 1. **Reading:** Complete the [Week 3 Readings]({{ '/docs/week3/' | relative_url }}).
+1. **Reading:** Complete the [Week 3 Readings & Preparation]({{ '/docs/week3/' | relative_url }}).
 
 
 

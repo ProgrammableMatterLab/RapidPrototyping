@@ -1,7 +1,7 @@
 ---
 title: Week 3
 nav_order: 5
-nav_exclude: true
+nav_exclude: false
 description: >-
     Week 3 activities
 ---
@@ -25,12 +25,16 @@ This week's readings center on 3D design in Onshape, converting designs into mac
 
 ### Tutorials / Readings
 
-1. See our [Visual guide to creating 3D shapes](https://docs.google.com/presentation/d/12-XNApXlb_OBX1qUg1XBF8-zwFsiIKO5BWniCfVyFEA/edit?usp=sharing). This brief visual overview highlihts 4 key ways to create 3D geometries from 2D sketches. 
-1. *Coming soon: Tutorial: Extrusion/Assembly of laser cut panels*{: .text-red-300 }
-1. *Coming soon: Tutorial: Custom 3D printed mouse enclosure video*{: .text-red-300 }
-1. [Onshape Stirling Engine design](https://www.youtube.com/watch?v=GYkZmE_6MpY). An **excellent** one-stop-shop from Onshape for creating multi-part 3D models, including assemblies, animation, and variables. We recommend you follow-along and reconstruct the entire assembly. [75 mins]
+1. See our [Visual guide to creating 3D shapes](https://docs.google.com/presentation/d/12-XNApXlb_OBX1qUg1XBF8-zwFsiIKO5BWniCfVyFEA/edit?usp=sharing). This brief visual overview highlights 4 key ways to create 3D geometries from 2D sketches. 
+1. [Tool holder design](https://www.youtube.com/watch?v=VvpQu2rsH3A&list=PLGqRUdq5ULsONnjEEPeBxxStEsobDKAtV&index=2). Designing a single-part tool holder. Includes measuring with calipers, simple extrusions to add/remove material, fillets, test-printing a thinned prototype, and 3D printing considerations. [15 mins]
+1. [Onshape Stirling Engine design](https://www.youtube.com/watch?v=GYkZmE_6MpY). An **excellent** one-stop-shop from Onshape for creating multi-part 3D models, including sketching different planes, simple extrusions, assemblies, animation, and variables. We recommend you follow-along and reconstruct the entire assembly. [75 mins]
+1. [3D printer duct design](https://www.youtube.com/watch?v=o-jrtvJ98nE). A tutorial on modeling a duct for a 3D printer. Includes sketching from an imported model, lofts, and 3D printing considerations, including exporting as an STL file and support material considerations. [15 mins]
+1. [Racing helmet duct design](https://www.youtube.com/watch?v=Hnu3ib9AaQs). A tutorial on modeling a duct for a motorbike racing helmet. The design features for this organic shape shares many similarities with a computer mouse, including lofts, sweeps, and creating planes. [21 mins]
 1. Complete The Mill's online [Slicer Tutorial](https://app.supademo.com/demo/cmqinhhc90001zb0judqlhjcf?utm_source=link) for PrusaSlicer.
 1. Watch The Mill's (3-minute) [Slicer + 3D Printer Tutorial](https://www.youtube.com/watch?v=RS2ZAjKSuYc&list=PLBZaa2zz3DqG0cY6VFNdXidu7ONpXg30m&index=3) for printing on the Prusa MK4S.
+
+[//]: # 1. *Coming soon: Tutorial: Extrusion/Assembly of laser cut panels*{: .text-red-300 }
+[//]: # 1. *Coming soon: Tutorial: Custom 3D printed mouse enclosure video*{: .text-red-300 }
 
 ### [Optional] Further resources
 1. _Same suggestion as last week:_ There are many great resources online for learning CAD, and OnShape in particular, from scratch. Some additional recommended resources are Onshape's _New to CAD_ and _New to Onshape_ modules in [Onshape's Learning Center](https://learn.onshape.com/), the [Onshape Youtube channel](https://www.youtube.com/@OnshapeInc/featured), or in particular check out the many Youtube tutorials by Onshape-sponsored designer [Too Tall Toby.](https://www.youtube.com/@TooTallToby)
@@ -72,7 +76,7 @@ Since last week, you've worked on designing and laser-cutting a low-fidelity mou
 We'll use Onshape, a browser-based CAD program, to design our models. You can use your own laptop for this.  
 
 #### Slicers
-We will use [PrusaSlicer](https://www.prusa3d.com/p/prusaslicer/) to _slice_ (process) our 3D models for 3D printing. You can use the Mill computers to access prusaslicer, but we recommend downloading and running it from your personal laptop. PrusaSlicer also comes in a slimmed-down browser version called [Easyprint](https://www.printables.com/slice) which you can also try.
+We will use [PrusaSlicer](https://www.prusa3d.com/p/prusaslicer/) to _slice_ (process) our 3D models for 3D printing. You can use the Mill computers to access Prusaslicer, but we recommend downloading and running it from your personal laptop. PrusaSlicer also comes in a slimmed-down browser version called [Easyprint](https://www.printables.com/slice) which you can also try.
 
 You will export an Onshape model as a _.STL_ file, load it into PrusaSlicer, slice it, then export the _Gcode_. You will save the _Gcode_ to a USB for transfer to the printers.  Use the following settings:
 1. Print settings: 0.2mm
@@ -117,7 +121,7 @@ To succeed on the assignment task, your goal during the lab should be to design 
 
 [//]: # 1. **Reading:** Complete the [Week 4 Readings]({{ '/docs/week4/' | relative_url }}).
 
-### Task: Laser-cut Mouse Enclosure
+### Task: 3D-printed Mouse Enclosure
 
 #### Task learning objectives
 The goals of this assignment are to:
