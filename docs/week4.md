@@ -19,21 +19,22 @@ description: >-
 </details>
 
 ---
+
 ## Readings & Preparation
 
-*Coming soon*{: .text-red-300 }
+This week's readings center on 3D design in Onshape, converting designs into machine instructions using Slicers, and fabrication using 3D printers.
 
 ### Tutorials / Readings
 
-*Coming soon*{: .text-red-300 }
 
-[//]: # 1. *TBC - More Onshape tutorials*{: .text-red-300 }
+[//]: # 1. *Making things Move chapter 8; pretty cursory*{: .text-red-300 }
 [//]: # 1. *Assembly readings*{: .text-red-300 }
 [//]: # 1. *Soldering for heat sets?*{: .text-red-300 }
 
-### [Optional] Further resources
-*Coming soon*{: .text-red-300 }
 
+
+### [Optional] Further resources
+1. [507 Mechanical movements](https://www.fivehundredseven.com/507). 3D printed recreations of several mechanisms from Henry T. Brown's "507 Mechanical Movements" written in the 1860s. Modeled in Onshape and printed on a Formlabs resin printer.
 
 ## Lecture
 
@@ -63,5 +64,7 @@ description: >-
 ## Assignments
 
 *Coming soon*{: .text-red-300 }
+
+*Rube Goldberg machine: "a machine that accomplishes by complex means what seemingly could be done simply"*{: .text-red-300 }
 
 

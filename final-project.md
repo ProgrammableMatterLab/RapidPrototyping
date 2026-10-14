@@ -39,6 +39,12 @@ description: >-
 
 [//]: # *Add Full credit suggestions: incorporate learnings from other classes e.g. FEA, control; apply to research problem; etc*{: .text-red-300 }
 
+[//]: # *Examples: Research-aligned project, wearable device, robot, Rube Goldberg Machine, kinetic art sculpture...*{: .text-red-300 }
+
+[//]: # Kinetic sculptures like Daniel Rozin's wooden mirror:
+[//]: # https://www.smoothware.com/danny/woodenmirror.html
+[//]: # https://www.youtube.com/watch?v=kV8v2GKC8WA
+
 [//]: # You will discuss your particular project idea with the instructor via Design Reviews to determine its suitability.
 
 ## Bill of Materials

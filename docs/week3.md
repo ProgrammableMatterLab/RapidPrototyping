@@ -61,7 +61,8 @@ Since last week, you've worked on designing and laser-cutting a low-fidelity mou
 1. Class printers (12x). These are accessible only to students taking Mill-based classes like ours. These 12 class printers are moreover reserved exclusively for our class during our lab times. 
 1. Open access printers (12x). These are accessible to all students, including you, on a first-come first-served basis. An exception is for our 3DP-focused labs on October 16th and October 23rd, when all printers are reserved for us.
 
-**USBs**: you'll need a USB to transfer your printer files (gcode) to the printers. The Mill always tries to keep a large stash of USBs to use, but it might be useful to bring your own as a backup.
+#### USBs 
+You'll need a USB to transfer your printer files (gcode) to the printers. The Mill always tries to keep a large stash of USBs to use, but it might be useful to bring your own as a backup.
 
 #### Material
 
@@ -109,9 +110,9 @@ First, read the Assignment **Task** description below. Then proceed to read this
 To succeed on the assignment task, your goal during the lab should be to design and print at least two small mating 3D printed parts. These could be a low-profile square (10 x 10 x 2 mm), and a slightly larger rectangle with a mating hole for that square that's toleranced upwards for the square to fit (try 10.15 x 10.15 x 2 mm). This will let you go through the process of design and fabrication on the 3D printer with mating parts:
 1. Design 2 mating parts in Onshape. Dimension or offset to account for tolerance (enlarge holes for any mating parts).
 1. Export your file as a .STL.
-1. Use your own computer or a Mill computer to access PrusaSlicer. Orient your parts appropriately and use the Slicer settings give in the _Slicer_ section above.
+1. Use your own computer or a Mill computer to access PrusaSlicer. Orient your parts appropriately and use the Slicer settings given in the _Slicer_ section above.
 1. _Slice_ the model to produce a gcode file, save to USB, and transfer to a printer.
-1. After printing, try to mate your cut parts. You can borrow Calipers from the Mill to check dimensions if they need re-sizing.
+1. After printing, assemble your mating printed parts. You can borrow Calipers from the Mill to check dimensions if they need re-sizing.
 
 
 ## Assignments
@@ -121,14 +122,36 @@ To succeed on the assignment task, your goal during the lab should be to design 
 
 [//]: # 1. **Reading:** Complete the [Week 4 Readings]({{ '/docs/week4/' | relative_url }}).
 
+
+<figure style="text-align: center;">
+  <img src="{{ '/assets/images/W3-3dp-mouse.png' | relative_url }}"
+       alt="3DP Mouse"
+       style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
+  <figcaption>Figure 1: 3D printed mouse enclosure, printed in 2 friction-fitting parts; fully functional via compliant buttons, USB wire access, and exposed wheel and optical reader.</figcaption>
+</figure>
+
+
 ### Task: 3D-printed Mouse Enclosure
 
 #### Task learning objectives
 The goals of this assignment are to:
 1. Learn to produce 3D models in Onshape and adjust for 3D printing tolerances for mating parts.
 1. Use PrusaSlicer to process Onshape models for 3D printing.
-1. 3D print mating parts.
+1. Use 3D printers and assemble 3D-printed parts.
 
-#### Task deliverables
+#### Task Deliverables: High fidelity 3D printed mouse
 
-*Coming soon*{: .text-red-300 }
+The deliverables for the 3D-printed mouse, as with the laser-cut version, center on: CAD documentation, fabrication documentation, and final physical prototype. 
+
+At a minimum, you should complete:
+1. CAD screenshots showing the development of your design, with dimensioning.
+1. Photos taken of your 3D printed parts
+1. A photo of your physical mouse. It should have an appropriate size and shape (it should be mouse-shaped, by which we mean clearly recognizable as a computer mouse; we recommend using _loft_ in Onshape), be entirely 3D printed (no laser-cut parts), and allow insertion of the PCB (we recommend designing parts that can be assembled around the PCB via friction-fitting). 
+1. In your documentation, you should  discuss the development of your work; your design decisions, things you tried that did or didn't work, helpful resources you used, suprising outcomes etc.
+
+For full credit, you can try some of the following:
+1. Make a mouse enclosure that ensures the mouse is _fully functional_ by granting proper access to the the buttons, USB, scroll wheel, and optical tracker.  
+1. Increase the complexity of your mouse design, e.g. by making it right/left-handed, adding a thumb rest, or adding other geometric details.  
+1. In _addition_ to a 3D printed mouse, design and print an entirely different model of your choosing that showcases your learnings. Consider demonstrating geometric complexity and successful tolerancing/assembly of multiple disjoint parts. 
+
+To submit your assignment, document it under a Week 3 heading on your Google Site, then publish it.

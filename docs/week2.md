@@ -134,6 +134,9 @@ The goals of this assignment are to:
 
 #### Task Deliverables: Low fidelity laser-cut mouse
 
+
+[//]: # NOTE: The laser-cut mouse does not need to fully functioning; this is an extra-points option
+
 There are 3 deliverables for the laser-cut mouse: CAD documentation, fabrication documentation, and final physical prototype. 
 
 At a minimum, you should complete:
