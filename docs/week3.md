@@ -118,9 +118,7 @@ To succeed on the assignment task, your goal during the lab should be to design 
 ## Assignments
 
 1. **Task:** Complete this week's Task and publish your documentation on your Google Site.
-1. **Reading:** *Coming soon*{: .text-red-300 }
-
-[//]: # 1. **Reading:** Complete the [Week 4 Readings]({{ '/docs/week4/' | relative_url }}).
+1. **Reading:** Complete the [Week 4 Readings]({{ '/docs/week4/' | relative_url }}).
 
 
 <figure style="text-align: center;">
@@ -150,7 +148,7 @@ At a minimum, you should complete:
 1. In your documentation, you should  discuss the development of your work; your design decisions, things you tried that did or didn't work, helpful resources you used, suprising outcomes etc.
 
 For full credit, you can try some of the following:
-1. Make a mouse enclosure that ensures the mouse is _fully functional_ by granting proper access to the the buttons, USB, scroll wheel, and optical tracker.  
+1. Make a mouse enclosure that ensures the mouse is _fully functional_ by granting proper access to the buttons, USB, scroll wheel, and optical tracker.  
 1. Increase the complexity of your mouse design, e.g. by making it right/left-handed, adding a thumb rest, or adding other geometric details.  
 1. In _addition_ to a 3D printed mouse, design and print an entirely different model of your choosing that showcases your learnings. Consider demonstrating geometric complexity and successful tolerancing/assembly of multiple disjoint parts. 
 
