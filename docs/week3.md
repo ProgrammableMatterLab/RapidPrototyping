@@ -48,6 +48,8 @@ Since last week, you've worked on designing and laser-cutting a low-fidelity mou
 
 [//]: # After the lecture, the slides will be posted *HERE.*{: .text-red-300 }
 
+You can access the Lecture 3 slides here: [Lecture 3 slides](https://docs.google.com/presentation/d/1uh-6vU1-Pd4Jmk9aigQdElgLAGZFDx2_RzX0n8vNBbE/edit?usp=sharing).
+
 ## Hardware & Software
 
 
