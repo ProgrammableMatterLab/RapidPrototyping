@@ -7,18 +7,20 @@ description: >-
     Portfolio Website
 ---
 
-# About
+# Portfolio Website
 {:.no_toc}
 
-## Table of contents
-{: .no_toc .text-delta }
-
+<details markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
 1. TOC
 {:toc}
-
+</details>
 ---
 
-# Portfolio Website
+## Overview
 
 You will create a personal portfolio website for this class. This will host all of your assignments. Weekly assignments will be considered submitted once you have published your latest assignment documentation to your website. Only work that is documented on the personal website will be considered for grading.
 

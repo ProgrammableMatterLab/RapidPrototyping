@@ -147,7 +147,7 @@ At a minimum, you should complete:
 1. CAD screenshots showing the development of your design, with dimensioning.
 1. Photos taken of your 3D printed parts
 1. A photo of your physical mouse. It should have an appropriate size and shape (it should be mouse-shaped, by which we mean clearly recognizable as a computer mouse; we recommend using _loft_ in Onshape), be entirely 3D printed (no laser-cut parts), and allow insertion of the PCB (we recommend designing parts that can be assembled around the PCB via friction-fitting). 
-1. In your documentation, you should  discuss the development of your work; your design decisions, things you tried that did or didn't work, helpful resources you used, suprising outcomes etc.
+1. In your documentation, you should discuss the development of your work; your design decisions, things you tried that did or didn't work, helpful resources you used, suprising outcomes etc.
 
 For full credit, you can try some of the following:
 1. Make a mouse enclosure that ensures the mouse is _fully functional_ by granting proper access to the buttons, USB, scroll wheel, and optical tracker.  

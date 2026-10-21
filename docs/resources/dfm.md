@@ -7,18 +7,21 @@ description: >-
     Design for Manufacturing
 ---
 
-# About
+# Design for Manufacturing
 {:.no_toc}
 
-## Table of contents
-{: .no_toc .text-delta }
-
+<details markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
 1. TOC
 {:toc}
+</details>
 
 ---
 
-## Design for Manufacturing
+## Overview
 
 Design for manufacturability will be a constant topic throughout this course. Just because you can model something digitall in CAD doesn't mean you can build it physically; the manufacturing process will often dictate the design and leave behind tell-tale signs. On this page, we'll identify some key points relating to our **computer mouse** in particular. 
 

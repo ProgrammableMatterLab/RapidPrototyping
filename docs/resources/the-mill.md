@@ -7,18 +7,21 @@ description: >-
     The Mill Makerspace
 ---
 
-# About
+# The MILL Makerspace
 {:.no_toc}
 
-## Table of contents
-{: .no_toc .text-delta }
-
+<details markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
 1. TOC
 {:toc}
+</details>
 
 ---
 
-## The MILL Makerspace
+## Overview
 
 Labs will be held in [The Mill Makerspace](https://hfs.uw.edu/experience/perks-recreation/the-mill/), located in [McCarty Hall](https://www.google.com/maps/place/McCarty+Innovation+%26+Learning+Lab+(The+MILL)/@47.6605206,-122.3051746,306m/data=!3m1!1e3!4m14!1m7!3m6!1s0x5490148ea8d9fc2d:0x67d212a0f804342!2sMcCarty+Hall+(MCC)!8m2!3d47.6607654!4d-122.304984!16s%2Fg%2F1pp2vlrnf!3m5!1s0x549015aaf40a4b19:0x889b35b583fd7570!8m2!3d47.660533!4d-122.3046792!16s%2Fg%2F11gmczmx3v?entry=ttu&g_ep=EgoyMDI2MDgyNi4wIKXMDSoASAFQAw%3D%3D). Some days will involve Mill-staffed trainings or group exercises, so it is critical to arrive on time. UW students can access The Mill at any time during their operating hours using their Husky card. Please bring your personal laptop for design exercises, as well as any materials given to you relevant to the day's activities. There is also a storage area where you can store fabricated items.
 
