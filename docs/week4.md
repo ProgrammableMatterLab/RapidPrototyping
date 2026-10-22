@@ -54,7 +54,7 @@ Since last week, you've worked on designing and 3D printing a high-fidelity mous
 1. Give an overview on mechanism design and assemblies, filling in some gaps beyond the readings.
 1. Introduce this week's Lab.
 
-[//]: # You can access the Lecture 4 slides here: [Lecture 4 slides]().
+You can access the Lecture 4 slides here: [Lecture 4 slides](https://docs.google.com/presentation/d/1pBlWS78KJFFCLczOxkHMfNkMEATYPL_1wllA5xVgVRc/edit?usp=sharing).
 
 
 
