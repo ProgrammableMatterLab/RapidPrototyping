@@ -91,7 +91,7 @@ The lab will involve prototyping several circuits; below are the components we w
 1. Buck converter 9-12V to 5V (x1)
 1. Resistors (as needed)
 1. Jumper wires (x20 or as needed)
-1. Terminal blocks, assorted sizes (6x total terminals for battery & buck 3.g. 3x 2-block terminals, or as needed)
+1. Terminal blocks, assorted sizes (6x total terminals for battery & buck; for example 3x 2-terminal blocks, or as needed)
 
 We will also have the following resources which should stay in lab:
 1. Multimeters (shared during lab - x5 available)
@@ -135,7 +135,7 @@ Please do the following:
 1. Second, read the _Materials_ section above to know which components you'll need for the lab activity and assignment. 
 1. Come back here and proceed to read this lab activity section section.
 
-The following electronic prototyping problems are intended to get you familiar with working with electronics so you can ask questions during lab and prepare yourself to complete the Task on your own. These are not graded, so if you're already comfortable with these concepts you are welcome to skip these in part or in full.
+The following electronic prototyping problems are intended to get you familiar with working with electronics so you can ask questions during lab and prepare yourself to complete the Task on your own. These are not graded, so if you're already comfortable with some concepts you are welcome to skip some steps.
 
 
 To succeed on the assignment task, your goal during the lab should be to design several electronic circuits in the Falstad simulator, build them physically, and inspect them using a multimeter. For all the problems below, simulate them in falstad first, then build them and check key currents/voltages with a multimeter
@@ -198,7 +198,7 @@ The goals of this assignment are to:
 The deliverables center on electronic design and integration into a fabricated enclosure.
 
 At a minimum, you should complete:
-1. Circuit schematic and circuit simulation gif from the Falstad simulator.
+1. Circuit schematic and circuit simulation gif/video from the Falstad simulator.
 1. CAD screenshots of your mechanical enclosure/parts.
 1. Photos of your physical mechanical enclosure/parts, your soldered circuit board, and how the board is fastened to/inside the enclosure. 
 1. Photos and video/gifs of your assembled device working. The device should:
