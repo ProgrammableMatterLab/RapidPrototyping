@@ -97,13 +97,14 @@ We will also have the following resources which should stay in lab:
 1. Multimeters (shared during lab - x5 available)
 1. Solderable Perfboards (shared during lab - for solder practice)
 1. 3D printed Blocks and heatset inserts (shared during lab - for solder practice) 
+1. Solder and solder wick (we have this in storage, but the Mill also has their own)
 
 We will store extras for most components (LEDs, wires, resistors etc.) in the storage room so you can collect new components as you work on the assignment if needed. To complete the assignment, you will also need:
 1. Solderable breadboard (x1)
 1. Heat set inserts (around x4, or as needed)
 
 
-[//]: # Elgeoo / Arduino Uno microcontroller
+
 
 ### Software
 
@@ -133,7 +134,7 @@ You will begin work on your **assignment** task to produce an _Analog electronic
 Please do the following:
 1. First, read the Assignment _Task_ description below so you understand what you need to know when you leave lab.
 1. Second, read the _Materials_ section above to know which components you'll need for the lab activity and assignment. 
-1. Come back here and proceed to read this lab activity section section.
+1. Come back here and proceed to read this lab activity section.
 
 The following electronic prototyping problems are intended to get you familiar with working with electronics so you can ask questions during lab and prepare yourself to complete the Task on your own. These are not graded, so if you're already comfortable with some concepts you are welcome to skip some steps.
 

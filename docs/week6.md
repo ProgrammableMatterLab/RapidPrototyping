@@ -80,13 +80,130 @@ The following are dedicated short tutorials on control structure.
 1. [Arduino Uno Pinout Diagram](https://docs.arduino.cc/resources/pinouts/A000066-full-pinout.pdf). A labelled breakdown of all the pins on the Elegoo/Arduino Uno.
 
 
-[//]: # What to do in the lab
-[//]: #1. [Connect to Arduino](https://makeabilitylab.github.io/physcomp/arduino/arduino-ide.html). You should already have installed the Arduino IDE (**see readings**). Now go to Step 3 and select/confirm _Arduino Uno_ from the dropdown.
-[//]: #1. Blink an breadboard-mounted LED on and off; 1 second on, 0.5 seconds off. _Hint: pinMode, digitalWrite, Delay._ 
-[//]: #1. Using the same circuit, add code to use the serial monitor to print the LED state (off or on) in real time. _Hint: Serial.print, Serial.println_ 
-[//]: #1. Blink an breadboard-mounted LED on and off; 1 second on, 0.5 seconds off. 
+## Lecture
+
+Since last week, you've worked on designing and building circuits using breadboarding and soldering using a variety of components. In this lecture, we will:
+1. Hold a recitation on programming for Arduino.
+
+## Hardware & Software
+
+
+This week will focus on programming the Elegoo/Arduino microcontroller using the Arduino IDE. We will rely on the electronics hardware previously introduced in week 5.
+
+### Hardware
+
+For the lab:
+1. Elgeoo / Arduino Uno microcontroller
+1. All electronics and kits introduced in [Week 5]({{ '/docs/week5/' | relative_url }}).
+1. Your laptop
+
+### Software
+
+1. Arduino IDE
 
 
 
+## Lab
+
+This lab will have a single activity: 
+1. Programming with Arduino. 
+
+### Programming with Arduino
+
+You will complete a number of programming challenges in the lab to prepare you to complete the **assignment** task, which will involve a _Programmable retrofit_ of the Analog electronic device you already completed. You should have **completed all the readings** when you arrive in lab.
+
+**You will need to submit the assignment individually, but feel free to work in pairs during lab.**
+
+#### What to do in the lab
+
+Please do the following:
+1. First, read the Assignment _Task_ description below so you understand what you need to know when you leave lab.
+1. Come back here and proceed with the lab activity section.
+
+The following Arduino exercises are intended to get you familiar with programming in the Arduino IDE, debugging, and writing and reading from electronics.  
+
+**Important**: You will use your laptop to power the Arduino and flash programs to it. You will also use a battery and transistors to allow drawing higher currents from the battery instead of the Arduino. On the breadboard, ensure you connect the Arduino Ground to the battery Ground. You should build all the circuits on breadboards, and verify the current draw manually or using Falstad before connecting & powering up the Arduino.
+
+[//]: # To succeed on the assignment task, your goal during the lab should be to design several electronic circuits in the Falstad simulator, build them physically, and inspect them using a multimeter. 
+
+For all the problems below, ensure you use appropriate current-limiting resistors in your circuits and do not exceed the maximum current outputs of your devices (see the **Tip** below):
+1. [Connect to Arduino](https://makeabilitylab.github.io/physcomp/arduino/arduino-ide.html). You should already have installed the Arduino IDE (see this week's **readings**). Now go to Step 3 and select/confirm _Arduino Uno_ from the dropdown.
+1. Blink a breadboard-mounted LED on and off; 1 second on, 0.5 seconds off. Don't forget a current-limiting resistor. _Hint: pinMode, digitalWrite, Delay._ 
+1. Write a For loop that fades and brightens an LED repeatedly. _Hint: For, analogWrite._
+1. Using the same circuit, write a For loop that fades and brightens an LED only 3 times, then leaves the LED on. _Hint: If/Else._
+1. Using a pushbutton, write a program to enable lighting the LED when the button is pressed. The button should not be physically connected to the LED; read the button state using the Arduino, and toggle current to the LED using the Arduino. _Hint: digitalRead, If/Else._
+1. Using two pushbuttons, enable lighting the LED only when _both_ buttons are pressed. Again, buttons should not be physically connected to the LED. 
+1. Using the same circuit, add code to use the serial monitor to print the Button/LED state (off or on) in real time. _Hint: Serial.print, Serial.println_. 
+1. Using an NPN transistor, battery, and buck converter: build a circuit to enable turning on an LED when a single button is pressed. Note: the button should not be physically connected to the LED; use the Arduino to toggle the transistors on/off; and ensure the LED is _powered_ from the buck, **not** the Arduino.
+1. Using a motor instead of an LED, update the previous circuit to enable turning on the DC motor when the button is pressed. Ensure the motor is _powered_ from the buck, **not** the Arduino.
+1. Using a potentiometer instead of a button, update the previous circuit to enable changing the speed of the DC motor when the pot is turned. Ensure the motor is _powered_ from the buck, **not** the Arduino.
 
 
+{: .highlight }
+> **Key current limits**
+> 
+> **For the Arduino:** Individual pins (continuous current: 20mA; maximum for short duration: 40mA). Total current across all pins: 200mA.
+> 
+> **For our 9V battery & buck converters:** The maximum current ratings of our buck converters is (input: 1.3A, output: 3A), and the batteries is 500mA. To be conservative and prevent voltage drops, ensure your circuit consumes less than 250mA in total. 
+
+## Assignments
+
+1. **Task:** Complete this week's Task and publish your documentation on your Google Site.
+1. **Reading:** Complete the [Week 7 Readings & Preparation]({{ '/docs/week7/' | relative_url }}).
+1. **Final Project Interest Form:** Complete the [Final Project Interest Form](https://docs.google.com/forms/d/e/1FAIpQLSdbAoUYMhUNMhjvWky1pBBXVdBKtHgwij1lJUYA8SKR3pShUw/viewform?usp=dialog) before Veteran's Day (note there's no lecture that Wednesday). We will use your response to assign groups for Final Projects.
+
+
+### Task: Programmable Retrofit
+
+#### Task definition
+
+Modify your **Week 5** analog electronic device by adding a meaningful programmable behavior using an Arduino. Use the Arduino to read inputs and control outputs in a way that replaces, extends, or automates the functions of your existing device. This retrofit should replace all _hardwired_ connections between inputs and outputs (e.g. a button that toggles an LED circuit open/closed) with _programmable_ connections (the arduino reads the button input, performs a logical operation, then writes a value to toggle the LED).
+
+The Arduino can remain outside the Week 5 enclosure; you do not need to permanently mount it inside/onto the device. The only modifications you need to make to your Week 5 device are to make its functionality programmable via the Arduino. For the enclosure, this might involve no re-design at all, or may require re-printing part of the enclosure with a small hole to allow transceiving signals from the Arduino. For the electronics and perfboard, you will need to modify and re-solder certain existing connections as needed to create a programmable interface to the Arduino. You may find this [3-minute De-soldering Tutorial](https://www.youtube.com/watch?v=bG7yW9FigJA) useful in addition to the soldering/de-soldering tutorial from last week's readings.
+
+You should modify the Week 5 device to be programmable, and extend any functions you wish, and update the design objectives you established in Week 5 as you see fit. 
+
+#### Task learning objectives
+
+The goals of this assignment are to:
+1. Learn to write and debug Arduino programs.
+1. Use an input from a physical circuit to control an output through a program.
+1. Modify a previously soldered circuit and fabricated enclosure to meet an updated design objective.
+
+#### Task Deliverables: Programmable retrofit
+
+The deliverables center on adding a meaningful programmed behavior to the Week 5 device while preserving the existing device as much as practical.
+
+At a minimum, you should complete:
+1. Updated hardware to allow Arduino interfacing, including:
+   1. A updated electronic schematic; just a static schematic image (without simulation) is sufficient (See **Tip** below).
+   1. A physically soldered perfboard; a photo.
+   1. (If needed) a minimally updated enclosure that allows Arduino interfacing; CAD and physical photos.
+   1. A description of the changes you made and why.
+1. A working Arduino program, that replaces all _hardwired_ connections between inputs and outputs with _programmable_ connections:
+   1. Provide commented source code for your Arduino program, with comments explaining the purpose of the main variables, functions, and control logic.
+   1. Use the Serial Monitor to display input values and operating modes while operating the device; provide gifs/videos.
+   1. A description of what the code does and why.
+1. The functional, programmed device, including:
+   1. Photos and Videos/Gifs of the assembled device operating. 
+   1. A description of your design intent (the intended behavior) and what the device actually does.
+   1. How using the Arduino _replaces/automates_ the original Week 5 circuit.
+
+For full credit, you can try some of the following:
+1. Use programming in Arduino to _extend_ the functionality of the original circuit with more complex behavior than what existed before, explaining how and why. For example, rather than just replacing a button-enabled LED with the equivalent programmed behavior, implement a control structure using loops and conditionals to brighten/fade it via button press. 
+1. Augment the original circuit with additional physical inputs and/or outputs, and program their behavior via Arduino.
+1. Use _millis()_ to create non-blocking timed behavior rather than relying entirely on _delay()_.
+1. Implement [Button de-bouncing](https://makeabilitylab.github.io/physcomp/arduino/debouncing.html), which is itself a reading topic for next week, or research and implement other strategies for making the device respond more reliably.
+1. Add a programmed safety behavior, such as a timeout or emergency stop.
+1. Improve the physical presentation of the modified device while maintaining programming/troubleshooting access (for example, implement clean wiring pass-throughs, or add an enclosure/mount for the Arduino, etc.)
+
+
+To submit your assignment, document it under a Week 6 heading on your Google Site, then publish it.
+
+
+{: .highlight }
+> **Arduino and Falstad**
+> 
+> **Static schematic:** To design a static circuit in Falstad that shows our Arduino pins, we can just add labelled nodes. Go to Draw → Outputs and Labels → Add Labeled Node, and then label the Node with Pin 1, Pin 2 etc. Note this will not _simulate_ the functionality, but it will show your schematic and is sufficient for our purposes.
+> 
+> **Simulated schematic:** There are a number of tools that also allow simulating circuits controlled via Arduinos. We do not require you to use these, but if you wish, feel free to check out the [Falstad AVR8js 8-bit AVR Arduino simulator](https://falstad.com/circuit/avr8js/) which embeds Arduino code directly into Falstad, and [TinkerCAD Circuits](https://www.tinkercad.com/circuits) which is a beginner-friendly tool to visually breadboard circuits and run Arduino code on them.
