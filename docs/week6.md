@@ -100,6 +100,7 @@ For the lab:
 ### Software
 
 1. Arduino IDE
+1. [Falstad Circuit Simulator](https://www.falstad.com/circuit/circuitjs.html)
 
 
 
@@ -151,6 +152,13 @@ For all the problems below, ensure you use appropriate current-limiting resistor
 1. **Task:** Complete this week's Task and publish your documentation on your Google Site.
 1. **Reading:** Complete the [Week 7 Readings & Preparation]({{ '/docs/week7/' | relative_url }}).
 1. **Final Project Interest Form:** Complete the [Final Project Interest Form](https://docs.google.com/forms/d/e/1FAIpQLSdbAoUYMhUNMhjvWky1pBBXVdBKtHgwij1lJUYA8SKR3pShUw/viewform?usp=dialog) before Veteran's Day (note there's no lecture that Wednesday). We will use your response to assign groups for Final Projects.
+
+<figure style="text-align: center;">
+  <img src="{{ '/assets/images/W6-Arduino-project.png' | relative_url }}"
+       alt="device"
+       style="display: block; max-width: 99%; height: auto; margin: 0 auto;">
+  <figcaption>Figure 1: A Googly eyes project controlled by an Arduino Uno.</figcaption>
+</figure>
 
 
 ### Task: Programmable Retrofit
