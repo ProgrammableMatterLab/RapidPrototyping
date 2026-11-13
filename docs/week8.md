@@ -18,74 +18,112 @@ description: >-
 {:toc}
 </details>
 ---
-## Readings & Preparation
 
-*Coming soon*{: .text-red-300 }
-
-### Tutorials / Readings
-
-*Coming soon*{: .text-red-300 }
-
-### [Optional] Further resources
-*Coming soon*{: .text-red-300 }
 
 
 ## Lecture
 
-*Coming soon*{: .text-red-300 }
-
-[//]: # *Idea discussion of “fantasy device” google form idea upload, and then discuss in class to share ideas, discuss time feasability, BOM required, how to build, risk mitigation.*{: .text-red-300 }
-
+Over the past week, you've worked with new electronic components and started brainstorming Final Project ideas for your Conceptual Design Review. In this lecture, we will:
+1. Discuss Machine Design
 
 [//]: # *Project Integration; CAD assembly with electronics (either imported CAD or simple proxy), con ops for use, block diagrams, schematics, also useful tools like heat set inserts, electrical tape insulation....Machine Overview as Example and Lab overview*{: .text-red-300 }
+
+[//]: # In lecture, show existing assignments and comment on ETL Survey
+[//]: # In lecture, ask people to share early ideas. *Idea discussion in class to share ideas, discuss time & technical feasability, BOM required, risk mitigation (see next week), how to build.*{: .text-red-300 }
+
+
 
 
 ## Hardware & Software
 
 
-*Coming soon*{: .text-red-300 }
+[//]: # *List hardware & software for Machine building kits*{: .text-red-300 }
 
 
 
 ## Lab
 
-*Coming soon*{: .text-red-300 }
+This lab will have the following activities:
+
+1. Machine Building exercise.
+1. Staff meeting to review CoDR and select Final Project.
 
 
-## Assignments
-
-*Coming soon*{: .text-red-300 }
-
-
-[//]: # BELOW: WEEK 7 ASSIGNMENT
-[//]: # BELOW: WEEK 7 ASSIGNMENT
-[//]: # BELOW: WEEK 7 ASSIGNMENT
 
 ## Assignments
 
-1. **Reading:** No reading.
-1. **Google Site:** Create a _new_ Google Site for your Group Project. See below.
-1. **Conceptual Design Brainstorm**: Conceptual design of 3 project idea proposals.
+*DRAFT below*{: .text-red-300 }
 
-<figure style="text-align: center;">
-  <img src="{{ '/assets/images/W7-blueprint.png' | relative_url }}"
-       alt="device"
-       style="display: block; max-width: 99%; height: auto; margin: 0 auto;">
-  <figcaption>Figure 1: Final Project Brainstorm.</figcaption>
-</figure>
 
-### Google Site for Final Project
 
-You will create a new Google Site as a group to document your final project. See the steps below.
-1. Create a _new_ Google Site for your Group Project. 
-1. Make Martin (nisser@uw.edu) the owner and ensure all group members are editors. 
-1. Publish your site with the web address set to a concatenated string of the class acronym and your Group number; for example, Group 3's project would be: _AA598-AUT26-Group-3_. 
-1. On the home page, clearly list the group members (first and last name).
-1. Link your group project site to your _personal_ website by adding a "Final Project" entry to your assignments drop-down on your personal website. 
 
-### Project Brainstorm
+### Preliminary Design Review (PDR): 
 
-1. Make a subpage titled "Project Brainstorm" and document your work here.
-1. **Important**: You must transfer ownership to Martin _and_ publish your website as previously descrived for your submission to be complete. 
+The Preliminary Design Review is the first technical design review for any system. Its purpose is to affirm that the design will be able to meet the requirements; therefore, it focuses on full definition of the design. It has two goals:
+- Analyze whether the chosen architecture can meet the requirements
+- Focus on a proof-of-concept of highest risk component(s).
 
-[//]: # *Submmit “fantasy device” google form idea upload for interesting final project. Comment on BOM, feasability, risk mitigation (see next week) We will discuss a few next lecture.*{: .text-red-300 }
+
+#### Deadlines
+
+- **Issued**: Friday November 20, 1pm (Week 8 lab)
+- **Due**: Wednesday November 25, 9am (before Week 9 lecture). 
+
+Note that you will present your Design Review **during Wednesday lecture** before we break for Thanksgiving break.
+
+#### Deliverables
+
+There are 2 deliverables:
+- Publish your CoDR to your Group Project Website.
+- A 5-minute presentation on your CoDR to present to class during lecture.
+
+To submit your PDR, document it under a "PDR" heading on your Group's Google Site, then publish it. Your presentation does not need to be published. See below for the sections required.
+
+#### Project Description & Rationale
+
+Detail the project description, including any revisions from the CoDR, and the rationale for selecting it.
+
+
+#### Critical feature prototype & Risk assessment
+
+
+Critical component/risk update: Proof of Concept or low fidelity prototype of most important/risky subsystem. Support by physical build, tests, document video/photo, CAD, Arduino. Downscope (Mitigation/fallback) or upscope planned.
+
+
+[//]: # EXCLUDED BECAUSE 5 DAY DEADLINE DUE TO THANKSGIVING BREAK
+[//]: # #### Preliminary designs or low fidelity prototypes
+
+[//]: # Other Work Update: 
+[//]: # - Sketches & CAD;
+[//]: # - Low-Fidelity Prototypes; 
+[//]: # - Electronics schematics and breaboarded circuits; estimates of maximum current draw. 
+[//]: # - Arduino PseudoCode 
+[//]: # - Updated BoM
+
+#### Updated System Level Requirements 
+
+Review and Update the key System Level Requirements detailed in your CoDR. Comment on any changes and why. 
+
+#### Performance Requirements 
+
+(toolhead travel at 100mm/s in X-Y plane; retract/extend pen in Z within 1s; draw images that are visually identical to parsed input image for 90% of attempts)
+
+#### System Block Diagram 
+
+(Depending on project, you may group blocks by physical component or functional area ; Show for Plotter? For information/Actuation flow)
+
+#### Gantt Chart & Responsibilities
+
+##### Gantt Chart
+Gantt Chart with key milestones for design/fabrication, electronics, code, and testing. It should span the 3 weeks  between the PDR being issued and the Presentation Day. It should include entries that are specific to your project (e.g. "fabricate rack-and-pinion mechanism" not only "design and fabrication").
+
+##### Individual responsibilities 
+Identify which group member will be the lead key aspects of the project, or how the responsibilities will be shared. You might consider annotating this directly on your Gantt Chart.
+
+#### Key next steps
+Detail any existing limitations, key remaining fixes and next steps; lingering questions to answer
+
+
+
+
+

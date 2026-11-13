@@ -35,7 +35,7 @@ description: >-
 
 ## Lecture
 
-*Coming soon*{: .text-red-300 }
+*Office Hours*{: .text-red-300 }
 
 
 ## Hardware & Software
@@ -45,7 +45,8 @@ description: >-
 
 ## Lab
 
-*Coming soon*{: .text-red-300 }
+*Final Presentations*{: .text-red-300 }
+*Course Survey*{: .text-red-300 }
 
 
 ## Assignments
