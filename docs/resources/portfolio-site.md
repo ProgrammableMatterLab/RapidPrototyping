@@ -30,7 +30,7 @@ Thorough documentation on your personal page is required in order to earn full c
 
 You will create a website using **Google Sites**. All UW students have access to Google Sites through their UW Google accounts, and creating a new site is quick work. 
 
-See [this example Google Site](https://sites.google.com/view/aa598-aut26-martin-nisser) for key elements that your portfolio website should have.
+See [this example Google Site](https://sites.google.com/view/aa598-aut26-martin-nisser) for key elements that your portfolio website should have. _Example websites are also given further below on this page._
 
 
 [//]: # *Here are examples of well-documented assignments from other similar classes.*{: .text-red-300 }
@@ -80,3 +80,26 @@ You will update your site weekly by adding your assignment documentation to the 
 You can view your published website at the URL: 
 
 _https://sites.google.com/view/aa598-aut26-firstname-lastname_ 
+
+---
+
+## Autumn 2026 websites
+
+Below are the personal portfolio websites for the Autumn 2026 cohort. An example of a strong assignment and documentation submission is [Kira's Week 2 laser-cut mouse](https://sites.google.com/uw.edu/aa598-aut26-kira-seshaiah/assignments/week-2) or [Julius' Week 4 Mechanism design](https://sites.google.com/uw.edu/aa598-aut26-julius-naehrig/assignments/week-4).
+
+- [Griff Ahnert](https://sites.google.com/uw.edu/aa598-aut26-griff-ahnert?usp=sharing)
+- [Ethan Bailes](https://sites.google.com/uw.edu/aa598-ethan-bailes/home)
+- [Alexander Chin](https://sites.google.com/uw.edu/aa598-aut26-alexander-chin)
+- [Rana Hasan](https://sites.google.com/uw.edu/aa598-aut26-rana-hasan/home)
+- [Brian Huang](https://sites.google.com/uw.edu/aa598-aut26-brian-huang/home)
+- [Jonathan Li](https://sites.google.com/uw.edu/aa598-aut26-jonathan-li/home)
+- [Melissa May](https://sites.google.com/uw.edu/aa598-aut26-melissa-may/home)
+- [Shawn Meyer](https://sites.google.com/uw.edu/aa598-aut26-shawn-meyer)
+- [Julius Naehrig](https://sites.google.com/uw.edu/aa598-aut26-julius-naehrig/home)
+- [John Michael Racy](https://sites.google.com/uw.edu/aa598-aut26-johnmichael-racy/home)
+- [Patrick Rae](https://sites.google.com/uw.edu/aa598-aut26-patrick-rae/home)
+- [Jessica Romero](https://sites.google.com/uw.edu/aa598-aut26-jessica-romero?usp=sharing)
+- [Kira Seshaiah](https://sites.google.com/uw.edu/aa598-aut26-kira-seshaiah/)
+- [Kendall Trellue](https://sites.google.com/uw.edu/aa598-aut26-kendall-trellue/home)
+- [Yifu Wang](https://sites.google.com/uw.edu/aa598-aut26-yifu-wang?usp=sharing)
+- [Nathan Watje](https://sites.google.com/uw.edu/aa598-nathan-watje/)

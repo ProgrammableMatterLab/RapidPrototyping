@@ -25,7 +25,7 @@ description: >-
 
 This page details key information for the new parts introduced in Week 7 that _supplement_ - but do not replace - the readings; their pinout diagrams, how to wire them and control them, and what to watch out for. 
 
-You can access complete datasheets here: [datasheets](https://drive.google.com/drive/folders/1tFlON6RotuLl_CQ2lE-gby_-qjhWu00B?usp=sharing).
+You can access complete datasheets here: [datasheets](https://drive.google.com/drive/folders/1tFlON6RotuLl_CQ2lE-gby_-qjhWu00B?usp=sharing), but read this page for possible exceptions or errors we've found in the datasheets. You will also find introductory starter code for several components here: [starter code](https://drive.google.com/drive/folders/1tFlON6RotuLl_CQ2lE-gby_-qjhWu00B?usp=sharing)
 
 ---
 
@@ -102,13 +102,15 @@ A motor that uses closed-loop control to rotate to an angle on the interval (0�
 
 A motor that turns in exact steps: 200 steps per revolution (1.8° each). It always needs a driver; never connect it to the Arduino directly and **always** power from an external supply.
 
+The stepper motor has 2 coils; one's leads is labelled A+/A-, the other B+/B-. Each lead is typically colored a different color, and is noted on the datasheet. However, we have found in practice that datasheets are not always accurate; the pairs on the Autumn 2026 motors should correspond to black/blue on one coil, green/red on the other, which is different from the [motor datasheet](https://www.omc-stepperonline.com/download/17HS15-1504S-X1.pdf): **Check the coil pairs with a multimeter:** about 2.3Ω across one coil, nothing between coils.
+
 ### Stepper motor wiring overview
 
 <figure style="text-align: center;">
-  <img src="{{ '/assets/images/wk7-elec/img/stepper_17HS15-1504S-X1_wiring.png' | relative_url }}"
+  <img src="{{ '/assets/images/wk7-elec/img/stepper_cable_wiring.png' | relative_url }}"
        alt="device"
        style="display: block; max-width: 80%; height: auto; margin: 0 auto;">
-  <figcaption>Stepper motor wiring diagram. Image: <a href="https://www.omc-stepperonline.com/download/17HS15-1504S-X1.pdf">StepperOnline 17HS15-1504S-X1 datasheet</a></figcaption>
+  <figcaption>Stepper motor wiring diagram. Image source: physical StepperOnline card accompanying the motor.</figcaption>
 </figure>
 
 ### Table showing connections
@@ -116,16 +118,16 @@ A motor that turns in exact steps: 200 steps per revolution (1.8° each). It alw
 | Wire | Coil | Driver pin |
 |---|---|---|
 | Black | A+ | A1 |
-| Green | A− | A2 |
-| Red | B+ | B1 |
-| Blue | B− | B2 |
+| Blue | A− | A2 |
+| Green | B+ | B1 |
+| Red | B− | B2 |
 
 ### Implementation recommendations
 
 - **Check the coil pairs with a multimeter:** about 2.3Ω across one coil, nothing between coils. Cable colours can differ, so trust the meter.
-- Swapping the two wires of one coil (e.g. black and green) only reverses the direction. If it buzzes but doesn't turn, wires from different coils are mixed up.
+- Swapping the two wires of one coil just reverses the direction. If it buzzes but doesn't turn, wires from different coils are mixed up.
 - **Never plug or unplug the motor while the driver is powered.**
-- Specs: 1.5A per phase, 0.45Nm, NEMA 17 (42mm), 5mm D-shaft.
+- Specs: 1.5A per phase, 0.42Nm, NEMA 17 (42mm), 5mm D-shaft.
 - It always needs a driver; never connect it to the Arduino directly and **always** power from an external supply.
 
 ---

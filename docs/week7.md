@@ -98,7 +98,7 @@ Please do the following:
 
 The following exercises are intended to get you familiar with reading limit switches and ultrasonic distance sensors, and with controlling motors using the Arduino. 
 
-See the [Advanced Components]({{ '/docs/resources/Week7_components/' | relative_url }}) page for more details and guidance for each component. Note that these details _supplement_ - but do not replace - the readings.
+See the [Advanced Components]({{ '/docs/resources/Week7_components/' | relative_url }}) page for more details and guidance for each component. Note that these details _supplement_ - but do not replace - the readings. This page also contains both _datasheets_ and _starter code_.
 
 **Important:** The stepper motor and the servo draw more current than the Arduino can supply. Power the stepper driver from the 12V power adapter, and the servo from the 5V buck converter (via the power adapter). On the breadboard, ensure you connect the Arduino Ground to the Grounds of the power adapter, buck converter and drivers. Never connect or disconnect the stepper motor while the power adapter is on: this can destroy the driver. Build all the circuits on breadboards, and check your wiring before powering up.
 
@@ -170,7 +170,7 @@ A Conceptual Design Review (CDR) is a high-level analysis of a project idea. It 
 #### Deadlines
 
 - **Issued**: Friday November 13, 1pm (Week 7 lab)
-- **Due**: Thursday November 19, 11:59pm (day after Week 8 lecture). 
+- **Due**: Friday November 20, 9am (before Week 8 lab). 
 
 Note this deadline is set so staff can answer lingering questions during Wednesday lecture, while giving staff time to review submitted CoDRs before that Friday's lab. We will discuss the proposals with you and select a project **during Friday lab.**
 
