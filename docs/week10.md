@@ -23,7 +23,7 @@ description: >-
 
 *Coming soon*{: .text-red-300 }
 
-[//]: # *Final Design Review. Project Presentation Guidelines/Format. Wrap-up: paths to mass manufacturing, sustainability, recommended classes,*{: .text-red-300 }
+[//]: # *Final Design Review. Project Presentation Guidelines/Format. Update personal website homepages. Wrap-up: paths to mass manufacturing, sustainability, recommended classes,*{: .text-red-300 }
 
 ### Tutorials / Readings
 
