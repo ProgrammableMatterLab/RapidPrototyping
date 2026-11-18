@@ -83,13 +83,41 @@ Our PDR and CDR deliverables for the drawing machine.
 
 ### Problem or Opportunity
 
-Drawing a picture by hand takes skill and time, and a printer can't draw with a real pen. For this class, a pen plotter is small but still needs CAD, 3D printing, electronics and code, so building one covers most of the course.
+Drawing a picture by hand takes skill and time, and aren't easy to copy accurately; we'd like a machine to enable this. Breaking the 4th wall for a moment, as instructors we also have a meta problem, which is identifying a device that integrates the key course topics on CAD, 3D printing, electronics and code, that can be assembled and tested during a single lab, and showcases what a machine build could look like.
 
 ### Proposed Solution
 
 - A 2-axis pen plotter. Two stepper motors move the pen in X and Y on GT2 belts and a servo lifts it. You upload a picture to a web page that makes G-code from it, or you draw with a joystick.
-- With 13 printed parts, homing and acceleration, it goes past what the labs covered.
-- It's for students in this class and sits on a lab desk. It draws up to 260 × 240 mm with any pen from 6 to 21 mm thick.
+- It's for students in this class and fits on a tabletop. It draws up to 260 × 240 mm with any pen from 6 to 21 mm thick.
+- With 13 printed parts, and a wide range of components introduced in the course, it relies largely on components and fabrication topics already covered. 
+- It also integrates a custom G-code generation tool for automatic plotting; an example of a feature that goes _beyond_ the class topics, which is one of the full-credit suggestions.
+
+
+
+
+## Functional Requirements
+
+The functional requirements of the 2D drawing machine are:
+1. Accepts an image upload from user as png/jpg. _The converter page opens PNG and JPG files._
+1. Parses & thresholds image to produce G-code as a drawable, line-based representation. _It has three line styles and saves the result as a `.gcode` file._
+1. Physically draws pictures using a pen in 1 color. _Any pen from 6 to 21 mm thick._
+1. Allow joystick control as well as automatic control of the pen end effector. _GRBL draws automatically and JoystickDraw lets you steer by hand._
+1. Does not drop pen; does not damage itself during operation. _The ratchet clamp holds the pen. Homing stops at the switches, and after that the firmware won't move past the edge of the work area._
+
+{: .highlight }
+> **Your project:** a functional requirement says what the device does. How well it does it belongs in the performance requirements. Each one should map to a part of your design.
+
+## Performance Requirements
+
+The performance requirements of the 2D drawing machine are:
+1. Toolhead travel at 100 mm/s in the X-Y plane. _We test it with `G0 X200` from home, which takes about 2.5 s._
+1. Retract/extend pen in Z within 1 s. _Send `M5`, then `M3 S70`. The pen should touch the paper within 1 s._
+1. Draw images that are visually identical to the parsed input image for 90% of attempts. _Draw the 100 mm test square 10 times. At least 9 should be within 1 mm, with closed corners._
+1. Return to the same home within 0.5 mm. _Draw a cross, home, and draw it again. The two crosses should be less than 0.5 mm apart._
+
+{: .highlight }
+> **Your project:** give each performance requirement a number and a test you can run in the lab.
+
 
 ## Design Iterations
 
@@ -114,28 +142,6 @@ After V5.1 we changed the rods. V5.1 was drawn with 430 mm rail rods and 300 mm 
 {: .highlight }
 > **Your project:** show each version and what went wrong with it. Get one piece working first (for us that was one rail) and build on it.
 
-## Functional Requirements
-
-The functional requirements of the 2D drawing machine are:
-1. Accepts an image upload from user as png/jpg. _The converter page opens PNG and JPG files._
-1. Parses & thresholds image to produce G-code as a drawable, line-based representation. _It has three line styles and saves the result as a `.gcode` file._
-1. Physically draws pictures using a pen in 1 color. _Any pen from 6 to 21 mm thick._
-1. Allow joystick control as well as automatic control of the pen end effector. _GRBL draws automatically and JoystickDraw lets you steer by hand._
-1. Does not drop pen; does not damage itself during operation. _The ratchet clamp holds the pen. Homing stops at the switches, and after that the firmware won't move past the edge of the work area._
-
-{: .highlight }
-> **Your project:** a functional requirement says what the device does. How well it does it belongs in the performance requirements. Each one should map to a part of your design.
-
-## Performance Requirements
-
-The performance requirements of the 2D drawing machine are:
-1. Toolhead travel at 100 mm/s in the X-Y plane. _We test it with `G0 X200` from home, which takes about 2.5 s._
-1. Retract/extend pen in Z within 1 s. _Send `M5`, then `M3 S70`. The pen should touch the paper within 1 s._
-1. Draw images that are visually identical to the parsed input image for 90% of attempts. _Draw the 100 mm test square 10 times. At least 9 should be within 1 mm, with closed corners._
-1. Return to the same home within 0.5 mm. _Draw a cross, home, and draw it again. The two crosses should be less than 0.5 mm apart._
-
-{: .highlight }
-> **Your project:** give each performance requirement a number and a test you can run in the lab.
 
 ## System Block Diagram
 
