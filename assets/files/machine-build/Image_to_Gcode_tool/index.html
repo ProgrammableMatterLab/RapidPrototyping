@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Image to Drawing Machine G-code</title>
+<style>
+  /* Layout: a header with the machine choice, then two columns: settings (steps 1-3, More settings, files) | preview (step 4) + machine card (step 5); one column at 900 px and below. */
+  :root {
+    --bg: #f3f4f6;        /* page */
+    --surface: #ffffff;   /* cards, inputs */
+    --ink: #1b2130;       /* text */
+    --muted: #5f6877;     /* secondary text */
+    --line: #dfe3e9;      /* borders, dividers */
+    --accent: #2457d6;    /* the one accent: selection, primary action, focus */
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --fs-xs: 12px; --fs-sm: 13px; --fs-md: 14px; --fs-lg: 16px; --fs-xl: 20px;
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+    --r-sm: 6px; --r: 8px; --r-lg: 12px;
+    /* two mixes of the colours above, not new colours: a pale accent and a firmer border */
+    --tint: color-mix(in srgb, var(--accent) 9%, var(--surface));
+    --edge: color-mix(in srgb, var(--line) 70%, var(--muted));
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { background: var(--bg); }
+  body { margin: 0; font: var(--fs-md)/1.45 var(--font); color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
+  h1, h2, p { margin: 0; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  code { font-family: var(--mono); font-size: .95em; background: var(--bg); padding: 0 3px; border-radius: 3px; }
+
+  /* ---------- header ---------- */
+  .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-3) var(--sp-5);
+         max-width: 1440px; margin: 0 auto; padding: var(--sp-5) var(--sp-5) var(--sp-4); }
+  .top .title { min-width: 0; }
+  h1 { font-size: var(--fs-xl); font-weight: 650; letter-spacing: -.01em; line-height: 1.25; }
+  .top .title p { margin-top: 2px; font-size: var(--fs-sm); color: var(--muted); }
+  .mode { display: flex; align-items: center; gap: var(--sp-3); }
+  .mode-label { font-size: var(--fs-sm); color: var(--muted); }
+  .mode .seg button { white-space: nowrap; padding-inline: var(--sp-3); }
+
+  /* ---------- layout ---------- */
+  main { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: var(--sp-5); align-items: start;
+         max-width: 1440px; margin: 0 auto; padding: 0 var(--sp-5) var(--sp-6); }
+  .work { display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
+
+  /* ---------- settings column ---------- */
+  .settings { padding: var(--sp-1) var(--sp-5) var(--sp-5); }
+  .step { padding: var(--sp-4) 0 var(--sp-5); }
+  .step + .step { border-top: 1px solid var(--line); }
+  .step-h { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3); font-size: var(--fs-md); font-weight: 600; }
+  .step-h .n { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+               background: var(--tint); color: var(--accent); font-size: var(--fs-xs); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hint { margin-top: var(--sp-2); font-size: var(--fs-xs); color: var(--muted); text-wrap: pretty; }
+  .step-h + .hint.lead { margin: calc(-1 * var(--sp-2)) 0 var(--sp-3); }
+
+  .drop { position: relative; display: block; padding: var(--sp-5) var(--sp-4); border: 1.5px dashed var(--edge); border-radius: var(--r);
+          background: var(--bg); color: var(--muted); font-size: var(--fs-sm); text-align: center; cursor: pointer; }
+  .drop:hover, .drop.over { border-color: var(--accent); color: var(--accent); background: var(--tint); }
+  .drop input { position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .drop:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* no picture yet: the drop zone is the first thing to do, so it carries the accent */
+  .drop:not(:has(~ #thumb:not([hidden]))) { display: grid; place-items: center; min-height: 104px;
+          border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: var(--tint); }
+  .drop:not(:has(~ #thumb:not([hidden]))):is(:hover, .over) { border-color: var(--accent); }
+  .drop:not(:has(~ #thumb:not([hidden]))) #dropText { color: var(--accent); font-weight: 600; }
+  /* once a picture is in, the drop zone becomes a one-line file row */
+  .drop:has(~ #thumb:not([hidden])) { padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-align: left; }
+  .drop:has(~ #thumb:not([hidden])):hover { border-color: var(--accent); }
+  canvas#thumb { display: block; width: 100%; height: auto; margin-top: var(--sp-2); border: 1px solid var(--line); border-radius: var(--r); cursor: crosshair; touch-action: none; }
+
+  .seg { display: flex; gap: 2px; padding: 3px; border-radius: var(--r); background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); }
+  .seg button { flex: 1 1 auto; min-width: 0; padding: 7px 8px; border: 0; border-radius: var(--r-sm); background: transparent;
+                color: var(--muted); font: inherit; font-size: var(--fs-sm); font-weight: 500; line-height: 1.25; cursor: pointer; }
+  .seg button:hover { color: var(--ink); }
+  .seg button.on { background: var(--surface); color: var(--accent); font-weight: 600; box-shadow: 0 1px 2px rgba(16, 24, 40, .14), 0 0 0 1px var(--line); }
+  .seg button:disabled { cursor: not-allowed; opacity: .55; }
+  .seg button:focus-visible { outline-offset: 0; }
+  #outlineOpts > .seg { margin-top: var(--sp-2); }
+  #outlineOpts > .seg button { padding: 5px 6px; }
+
+  label.row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0 var(--sp-2); margin-top: var(--sp-3); font-size: var(--fs-sm); }
+  label.row .v { min-width: 3ch; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  input[type=range] { grid-column: 1 / -1; width: 100%; margin: 4px 0 0; accent-color: var(--accent); }
+  .check { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-3); font-size: var(--fs-sm); }
+  .check input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+
+  .field { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); font-size: var(--fs-sm); }
+  .step-h + .field, .more-body > .field:first-child { margin-top: 0; }
+  .field .name { flex: 1; min-width: 0; }
+  .field .unit { flex: none; width: 52px; color: var(--muted); font-size: var(--fs-xs); }
+  input[type=number] { width: 76px; height: 32px; padding: 0 4px 0 var(--sp-2); border: 1px solid var(--line); border-radius: var(--r-sm);
+                       background: var(--surface); color: var(--ink); font: inherit; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; text-align: right; }
+  input[type=number]:hover { border-color: var(--edge); }
+  input[type=number]:focus-visible { outline-offset: 0; border-color: var(--accent); }
+  .xy { display: flex; align-items: center; gap: 6px; }
+  .xy label { display: flex; align-items: center; gap: var(--sp-1); color: var(--muted); font-size: var(--fs-xs); }
+  .xy input[type=number] { width: 52px; padding: 0 2px 0 var(--sp-1); }
+  #penOpts .vals { display: flex; align-items: center; gap: var(--sp-2); margin-left: auto; }
+
+  .warn { margin-top: var(--sp-3); font-size: var(--fs-sm); color: #8a5200; }
+  .warn:empty { display: none; }
+  .warn:not(:empty) { padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm); background: #fff4df; }
+  .warn.bad { color: #b3261e; font-weight: 600; background: #fdecea; }
+
+  details.more { border-top: 1px solid var(--line); }
+  details.more > summary { padding: var(--sp-4) 0; }
+  details.more[open] > summary { padding-bottom: var(--sp-3); }
+  .more-body { padding-bottom: var(--sp-4); }
+  .more-body .hint { margin-top: var(--sp-1); }
+  .sum-note { font-weight: 400; color: var(--muted); font-size: var(--fs-xs); }
+  .settings:has(#penOpts[hidden]) .pen-only { display: none; }
+
+  .files { padding-top: var(--sp-4); border-top: 1px solid var(--line); }
+  .files-h { margin-bottom: var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
+  .files-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
+  #msg { margin-top: var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
+  #msg:empty { display: none; }
+
+  /* ---------- disclosure rows ---------- */
+  summary { display: flex; align-items: center; gap: var(--sp-2); list-style: none; cursor: pointer; font-size: var(--fs-sm); font-weight: 600; color: var(--ink); }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: ""; flex: none; width: 6px; height: 6px; margin: 0 3px 2px 1px; border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); transform: rotate(-45deg); }
+  details[open] > summary::before { transform: rotate(45deg); margin-bottom: 4px; }
+  summary:hover { color: var(--accent); }
+
+  /* ---------- buttons: primary (.btn), secondary (.ghost), danger (.stop), text (.link) ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px var(--sp-4);
+         border: 1px solid var(--accent); border-radius: var(--r); background: var(--accent); color: #fff;
+         font: inherit; font-size: var(--fs-md); font-weight: 600; line-height: 1.2; text-align: center; cursor: pointer; }
+  .btn:hover { background: color-mix(in srgb, var(--accent) 86%, #000); }
+  .btn.ghost { border-color: var(--edge); background: var(--surface); color: var(--ink); font-weight: 500; }
+  .btn.ghost:hover { border-color: var(--muted); background: var(--bg); }
+  .btn.sm { min-height: 32px; padding: 5px var(--sp-3); font-size: var(--fs-sm); }
+  .btn.stop { border-color: #c4321f; background: #c4321f; color: #fff; }
+  .btn.stop:hover { background: #a7281a; }
+  .btn:disabled { border-color: var(--line); background: var(--bg); color: color-mix(in srgb, var(--muted) 55%, var(--surface)); cursor: not-allowed; }
+  .btn.stop:disabled { border-color: #c4321f; background: #c4321f; color: #fff; opacity: .4; }
+  .link { align-self: flex-start; margin-top: var(--sp-2); padding: 2px 0; border: 0; background: none; color: var(--accent);
+          font: inherit; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; }
+  .link:hover { text-decoration: underline; }
+
+  /* ---------- preview ---------- */
+  .card-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2) var(--sp-4); }
+  .card-h .step-h { margin: 0; }
+  .preview { padding: var(--sp-4) var(--sp-5) var(--sp-5); }
+  /* the title row keeps the height of the view switch, so nothing jumps when one-line mode hides it */
+  .preview .card-h { min-height: 37px; }
+  /* stat tiles, label over value: one row in both machine modes at 1280 px, so switching mode moves nothing */
+  .stats { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-5); margin-top: var(--sp-3); padding: 0 2px var(--sp-3); border-bottom: 1px solid var(--line); }
+  .stat { display: flex; flex-direction: column; min-width: 0; }
+  .stat small { font-size: var(--fs-xs); color: var(--muted); line-height: 1.3; white-space: nowrap; }
+  .stat b { font-size: var(--fs-md); font-weight: 600; line-height: 1.35; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .viewbar .seg button { padding-inline: var(--sp-3); }
+  /* the preview keeps its shape and is capped in height, so the machine card starts in the first screen */
+  canvas#view { display: block; width: auto; height: auto; max-width: 100%; max-height: max(460px, calc(100vh - 416px)); margin: var(--sp-3) auto 0; border-radius: var(--r); }
+  .caption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-4); margin-top: var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
+  .key { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .key i { display: inline-block; flex: none; }
+  .k-pen { width: 18px; border-top: 2px solid #1d2433; }
+  .k-move { width: 18px; border-top: 2px dashed #8fb0f2; }
+  .k-dot { width: 8px; height: 8px; border-radius: 50%; background: #2a6df4; }
+  .k-start { background: #1f9d55; }
+  .k-end { background: #c0392b; }
+  .k-room { width: 14px; height: 10px; border: 1.5px dashed #9aa3b2; }
+
+  /* ---------- machine card ---------- */
+  #sendPanel { padding: var(--sp-4) var(--sp-5) var(--sp-5); }
+  .flow { font-size: var(--fs-sm); color: var(--muted); white-space: nowrap; }
+  .note { font-size: var(--fs-sm); color: var(--muted); }
+  #sNote { margin-top: var(--sp-1); }
+  .note.bad { color: #b3261e; }
+  .connrow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); margin-top: var(--sp-3); }
+  .status { position: relative; overflow: hidden; flex: 1 1 320px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--sp-3); min-height: 44px;
+            padding: 6px var(--sp-3); border-radius: var(--r); background: var(--bg); }
+  /* before connecting there is nothing to show but the badge: no grey strip, Connect on the right */
+  #sendPanel:has(#sControls[hidden]) .status { flex: 0 1 auto; min-height: 0; padding: 0; background: none; }
+  #sendPanel:has(#sControls[hidden]) #sConnect { margin-left: auto; }
+  #sPos { flex: 1 1 auto; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+  .sw { display: flex; flex-wrap: wrap; gap: 6px; }
+  #sendPanel:has(#sControls[hidden]) .sw { display: none; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: var(--surface);
+           box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font-size: var(--fs-xs); font-weight: 600; line-height: 1.4;
+           white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .badge.ok { background: #e3f4ea; color: #17713c; box-shadow: none; }
+  .badge.busy { background: #e5edff; color: #1d4fc4; box-shadow: none; }
+  .badge.bad { background: #fdecea; color: #b3261e; box-shadow: none; }
+  .badge.hit { background: #fff1d6; color: #8a5200; box-shadow: none; }
+  #sBadge { font-size: var(--fs-sm); }
+  #sBadge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  .drive { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--sp-4) var(--sp-6); margin-top: var(--sp-4); }
+  .jogbox { flex: none; width: max-content; }
+  .jogbox .hint { white-space: nowrap; }
+  .jog { display: grid; grid-template-columns: 52px 68px 52px; grid-template-rows: repeat(3, 40px); gap: 6px; }
+  .jog button { border: 1px solid var(--edge); border-radius: var(--r); background: var(--surface); color: var(--ink);
+                font: inherit; font-size: var(--fs-sm); font-weight: 600; cursor: pointer; }
+  .jog button:hover { background: var(--bg); }
+  .jog button:disabled { border-color: var(--line); background: var(--bg); color: color-mix(in srgb, var(--muted) 55%, var(--surface)); cursor: not-allowed; }
+  .jog select { min-width: 0; padding: 0 2px; border: 1px solid var(--edge); border-radius: var(--r); background: var(--surface);
+                color: var(--ink); font: inherit; font-size: var(--fs-sm); font-weight: 600; text-align-last: center; cursor: pointer; }
+  .jog select:hover { background: var(--bg); }
+  /* 384 px holds Home, Draw, Pause and Stop on one line; narrower, the whole column goes under the jog pad */
+  .acts { flex: 1 1 384px; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+  .rowb { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
+  .rowb.main .btn { min-height: 40px; min-width: 88px; }
+  .rowb .push { margin-left: auto; }
+  /* one primary action at a time: Connect, then Home (until homed), then Draw */
+  #sendPanel:has(#sControls:not([hidden])) #sConnect { min-height: 32px; padding: 5px var(--sp-3); border-color: var(--edge); background: var(--surface); color: var(--ink); font-size: var(--fs-sm); font-weight: 500; }
+  #sendPanel:has(#sControls:not([hidden])) #sConnect:hover { border-color: var(--muted); background: var(--bg); }
+  #sendPanel:has(#sBadge:not(.ok)) #sHome:not(:disabled),
+  #sControls:has(#sDraw:disabled) #sZero:not(:disabled) { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 600; }
+  #sendPanel:has(#sBadge:not(.ok)) #sHome:not(:disabled):hover,
+  #sControls:has(#sDraw:disabled) #sZero:not(:disabled):hover { background: color-mix(in srgb, var(--accent) 86%, #000); }
+  progress { display: block; width: 100%; height: 6px; border: 0; border-radius: 999px; background: var(--bg); overflow: hidden; -webkit-appearance: none; appearance: none; }
+  progress::-webkit-progress-bar { background: var(--bg); border-radius: 999px; }
+  progress::-webkit-progress-value { background: var(--accent); border-radius: 999px; }
+  progress::-moz-progress-bar { background: var(--accent); }
+  /* the progress bar is a thin line along the bottom of the status strip, so it never moves anything */
+  #sProg { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 0; background: var(--line); }
+  #sProg::-webkit-progress-bar { background: var(--line); border-radius: 0; }
+  #sProg::-webkit-progress-value { border-radius: 0; }
+  #sProg[value="0"] { visibility: hidden; }
+  #sMsg { padding: var(--sp-2) var(--sp-3); border-left: 3px solid var(--accent); border-radius: var(--r-sm); background: var(--tint); color: var(--ink); font-size: var(--fs-sm); }
+  #sMsg[style*="color"] { border-left-color: #b3261e; background: #fdecea; }
+  #sMsg:empty { display: none; }
+
+  .disclose { margin-top: var(--sp-5); border-top: 1px solid var(--line); }
+  .disclose > summary { padding: var(--sp-3) 0 0; }
+  .disclose[open] > summary { padding-bottom: var(--sp-3); }
+  .btnrow { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .disclose .note { margin-top: var(--sp-3); max-width: 72ch; }
+  pre { margin: var(--sp-3) 0 0; padding: var(--sp-3); overflow: auto; border-radius: var(--r); background: var(--bg);
+        font: var(--fs-xs)/1.5 var(--mono); color: var(--ink); }
+  pre#sLog { min-height: 40px; max-height: 160px; }
+  .log-h { margin-top: var(--sp-4); font-size: var(--fs-xs); color: var(--muted); }
+  /* the serial log shows while the setup is open and under any red message ("Check the log below");
+     otherwise it is folded to zero height, not removed, so it stays scrolled to its newest line */
+  .logbox { height: 0; overflow: hidden; visibility: hidden; }
+  #sControls:has(details.disclose[open]) .logbox, #sControls:has(#sMsg[style*="color"]) .logbox { height: auto; overflow: visible; visibility: visible; }
+
+  details.firmware { padding: var(--sp-3) var(--sp-5); }
+  details.firmware[open] { padding-bottom: var(--sp-5); }
+  details.firmware > summary { font-weight: 500; color: var(--muted); }
+  details.firmware > summary:hover { color: var(--accent); }
+  details.firmware[open] > summary { color: var(--ink); }
+  details.firmware .note { margin-top: var(--sp-3); max-width: 80ch; }
+  #copyGrbl { margin-top: var(--sp-3); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .btn, .seg button, .jog button, .drop, input[type=number] { transition: background-color .12s, border-color .12s, color .12s, box-shadow .12s; }
+    summary::before { transition: transform .15s; }
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: minmax(0, 1fr); padding: 0 var(--sp-3) var(--sp-5); }
+    .top { padding: var(--sp-4) var(--sp-3) var(--sp-3); }
+  }
+  @media (max-width: 560px) {
+    .mode { flex-wrap: wrap; width: 100%; }
+    .mode .seg { flex: 1 1 260px; }
+    .settings { padding: 0 var(--sp-4) var(--sp-4); }
+    .preview { padding: var(--sp-3) var(--sp-4) var(--sp-4); }
+    #sendPanel, details.firmware { padding-left: var(--sp-4); padding-right: var(--sp-4); }
+    #sConnect { flex: 1 1 100%; }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2) var(--sp-3); }
+    #statStart { grid-column: 1 / -1; }
+    #sStart { white-space: normal; }
+    .viewbar, .viewbar .seg { width: 100%; }
+    .viewbar .seg button { flex: 1 1 auto; }
+    /* phone: the main actions and the guidance come right under the status strip, the jog pad last */
+    .drive { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: var(--sp-3); }
+    .acts { display: contents; }
+    .rowb.main { order: 1; display: grid; grid-template-columns: 1fr 1fr; }
+    #penRow { order: 2; display: grid; grid-template-columns: repeat(3, 1fr); }
+    #sMsg { order: 3; }
+    .jogbox { order: 4; margin-top: var(--sp-1); }
+    .rowb .push { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="title">
+    <h1>Image to Drawing Machine G-code</h1>
+    <p id="introPen">Turns a picture into pen strokes for the class drawing machine. Runs in your browser; nothing is uploaded.</p>
+    <p id="introLine" hidden>Turns a picture into one continuous pen line (the pen never lifts). Runs in your browser; nothing is uploaded.</p>
+  </div>
+  <div class="mode">
+    <span class="mode-label" id="machLabel">Machine</span>
+    <div class="seg" id="machSeg" role="group" aria-labelledby="machLabel">
+      <button data-machine="pen" class="on">Pen lift + homing</button>
+      <button data-machine="line">No pen lift (one line)</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <aside class="card settings" aria-label="Settings">
+    <section class="step">
+      <h2 class="step-h"><span class="n">1</span>Picture</h2>
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept="image/*,.jpg,.jpeg,.jfif,.png,.gif,.webp,.bmp">
+        <span id="dropText">Choose a JPG or PNG, drop it here, or paste one (Ctrl/Cmd + V)</span>
+      </label>
+      <div class="warn" id="fileErr"></div>
+      <canvas id="thumb" width="596" height="300" hidden></canvas>
+      <p class="hint" id="cropHint" hidden>Drag on it to crop; double-click to undo.</p>
+    </section>
+
+    <section class="step">
+      <h2 class="step-h"><span class="n">2</span>Style</h2>
+      <p class="hint lead">Outline suits line drawings; Squiggle rows and Scribble suit photos.</p>
+      <div class="seg" id="styleSeg">
+        <button data-style="outline" class="on">Outline</button>
+        <button data-style="rows">Squiggle rows</button>
+        <button data-style="tsp">Scribble</button>
+      </div>
+      <div id="outlineOpts">
+        <div class="seg" id="traceSeg">
+          <button data-trace="center" class="on">Follow drawn lines</button>
+          <button data-trace="edge">Trace around shapes</button>
+        </div>
+        <label class="row">Dark / light cut-off <span class="v" id="threshV">128</span>
+          <input type="range" id="thresh" min="10" max="245" value="128"></label>
+        <label class="row">Simplify <span class="v" id="simpV">2</span>
+          <input type="range" id="simp" min="0" max="10" step="1" value="2"></label>
+        <div class="check" id="silRow"><input type="checkbox" id="sil"><label for="sil">Silhouette only (one outer outline)</label></div>
+      </div>
+      <div id="toneOpts" hidden>
+        <label class="row">Brightness <span class="v" id="brightV">0</span>
+          <input type="range" id="bright" min="-100" max="100" value="0"></label>
+        <label class="row">Contrast <span class="v" id="contrastV">1.0</span>
+          <input type="range" id="contrast" min="0.5" max="3" step="0.1" value="1.2"></label>
+      </div>
+      <div id="rowsOpts" hidden>
+        <label class="row">Number of rows <span class="v" id="rowsV">40</span>
+          <input type="range" id="rows" min="10" max="120" value="40"></label>
+        <label class="row">Wiggle size <span class="v" id="ampV">0.9</span>
+          <input type="range" id="amp" min="0.2" max="1.4" step="0.05" value="0.9"></label>
+        <label class="row">Wiggle tightness <span class="v" id="freqV">1.0</span>
+          <input type="range" id="freq" min="0.4" max="3" step="0.1" value="1.0"></label>
+      </div>
+      <div id="tspOpts" hidden>
+        <label class="row">Number of dots <span class="v" id="dotsV">4000</span>
+          <input type="range" id="dots" min="500" max="8000" step="100" value="4000"></label>
+        <label class="row">Dark/light separation <span class="v" id="gammaV">2.0</span>
+          <input type="range" id="gamma" min="0.8" max="4" step="0.1" value="2"></label>
+      </div>
+      <div class="check"><input type="checkbox" id="invert"><label for="invert">Invert (draw the light parts)</label></div>
+    </section>
+
+    <section class="step">
+      <h2 class="step-h"><span class="n">3</span>Size and position</h2>
+      <label class="field"><span class="name">Drawing width</span>
+        <input type="number" id="width" min="20" max="250" value="120"><span class="unit">mm</span></label>
+      <div class="field" id="penOpts">
+        <span class="name">From home</span>
+        <span class="vals">
+          <span class="xy">
+            <label>X <input type="number" id="mx" min="0" max="240" step="1" value="10" aria-label="Distance from home, X (mm)"></label>
+            <label>Y <input type="number" id="my" min="0" max="220" step="1" value="10" aria-label="Distance from home, Y (mm)"></label>
+          </span>
+          <span class="unit">mm</span>
+        </span>
+      </div>
+      <p class="hint" id="machHintPen">Home, X0 Y0, is the near-left corner.</p>
+      <p class="hint" id="machHintLine" hidden>One unbroken line; you set the start point by hand.</p>
+      <div class="warn" id="warn"></div>
+    </section>
+
+    <details class="more">
+      <summary>More settings <span class="sum-note">speed<span class="pen-only">, pen, machine area</span></span></summary>
+      <div class="more-body">
+        <label class="field"><span class="name">Speed (feed rate)</span>
+          <input type="number" id="feed" min="100" max="6000" value="2400"><span class="unit">mm/min</span></label>
+        <div class="pen-only">
+          <label class="field"><span class="name">Pen down value (S)</span>
+            <input type="number" id="down" min="0" max="180" step="1" value="70"><span class="unit"></span></label>
+          <label class="field"><span class="name">Pause after pen move</span>
+            <input type="number" id="pause" min="0" max="2" step="0.05" value="0.2"><span class="unit">s</span></label>
+          <div id="areaBox">
+            <div class="field">
+              <span class="name">Machine area</span>
+              <span class="xy">
+                <label>X <input type="number" id="areaX" min="50" max="1000" step="1" value="260" aria-label="Machine area, X (mm)"></label>
+                <label>Y <input type="number" id="areaY" min="50" max="1000" step="1" value="240" aria-label="Machine area, Y (mm)"></label>
+              </span>
+              <span class="unit">mm</span>
+            </div>
+            <p class="hint">Keep 260 × 240 unless your machine reaches less far. On connecting, the page sets the machine to this area ($130, $131).</p>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="files">
+      <p class="files-h">For a sender app</p>
+      <div class="files-row">
+        <button class="btn ghost sm" id="dl" disabled>Download G-code</button>
+        <button class="btn ghost sm" id="copy" disabled>Copy G-code</button>
+      </div>
+      <button class="link" id="square">Download 100 mm test square</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </aside>
+
+  <div class="work">
+    <section class="card preview" aria-labelledby="previewTitle">
+      <div class="card-h">
+        <h2 class="step-h" id="previewTitle"><span class="n">4</span>Preview</h2>
+        <div class="viewbar" id="viewBar">
+          <div class="seg" id="zoomSeg">
+            <button data-zoom="machine" class="on">Whole machine area</button>
+            <button data-zoom="drawing">Close-up of the drawing</button>
+          </div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>Size</small><b id="sSize">–</b></div>
+        <div class="stat"><small>Line length</small><b id="sLen">–</b></div>
+        <div class="stat" id="statStrokes"><small>Strokes</small><b id="sStrokes">–</b></div>
+        <div class="stat"><small>Time</small><b id="sTime">–</b></div>
+        <div class="stat"><small>G-code lines</small><b id="sLines">–</b></div>
+        <div class="stat" id="statStart" hidden><small>Line starts</small><b id="sStart">–</b></div>
+      </div>
+      <canvas id="view" width="1000" height="760"></canvas>
+      <p class="caption" id="notePen"><span class="key"><i class="k-pen"></i>pen down</span><span class="key"><i class="k-move"></i>pen up</span><span class="key"><i class="k-dot"></i>home, seen from the rail side</span><span>Tape the paper with one corner just outside the pen tip at home.</span></p>
+      <p class="caption" id="noteLine" hidden><span class="key"><i class="k-dot k-start"></i>start: put the pen here, then Set zero here</span><span class="key"><i class="k-dot k-end"></i>end</span><span class="key"><i class="k-room"></i>room the drawing needs</span><span>+X right, +Y away from you.</span></p>
+    </section>
+
+    <section class="card" id="sendPanel" aria-labelledby="sendTitle">
+      <div class="card-h">
+        <h2 class="step-h" id="sendTitle"><span class="n">5</span>Draw on the machine</h2>
+        <p class="flow"><span id="step3Pen">Connect, Home, Draw</span><span id="step3Line" hidden>Connect, Set zero here, Draw</span></p>
+      </div>
+      <p class="note" id="sNote">Plug the Arduino (with GRBL on it) into USB, then connect. Works in Chrome or Edge on a computer.</p>
+      <div class="connrow">
+        <div class="status">
+          <span class="badge" id="sBadge">Not connected</span>
+          <span id="sPos"></span>
+          <div class="sw" id="swRow">
+            <span class="badge" id="swX">X switch: –</span>
+            <span class="badge" id="swY">Y switch: –</span>
+            <span class="badge bad" id="swA" hidden>Unplug the wires on A0, A1, A2</span>
+          </div>
+          <progress id="sProg" value="0" max="1"></progress>
+        </div>
+        <button class="btn" id="sConnect">Connect to machine</button>
+      </div>
+      <div id="sControls" hidden>
+        <div class="drive">
+          <div class="jogbox">
+            <div class="jog" role="group" aria-label="Move the pen">
+              <span></span><button id="jYp" title="Move away from you">Y+</button><span></span>
+              <button id="jXm" title="Move left">X−</button>
+              <select id="jStep" title="Distance per click" aria-label="Distance per click"><option value="1">1 mm</option><option value="10" selected>10 mm</option><option value="50">50 mm</option></select>
+              <button id="jXp" title="Move right">X+</button>
+              <span></span><button id="jYm" title="Move towards you">Y−</button><span></span>
+            </div>
+            <p class="hint">X+ goes right, Y+ away from you.</p>
+          </div>
+          <div class="acts">
+            <div class="rowb main">
+              <button class="btn ghost" id="sHome">Home</button>
+              <button class="btn ghost" id="sZero" hidden>Set zero here</button>
+              <button class="btn" id="sDraw" disabled>Draw</button>
+              <button class="btn ghost push" id="sPause" disabled>Pause</button>
+              <button class="btn stop" id="sStop" disabled>Stop</button>
+            </div>
+            <div class="rowb" id="penRow">
+              <button class="btn ghost sm" id="sPenUp">Pen up</button>
+              <button class="btn ghost sm" id="sPenDown">Pen down</button>
+              <button class="btn ghost sm" id="sPenLoad">Load pen</button>
+            </div>
+            <div class="msg" id="sMsg">Press Home first: the machine drives to its two limit switches to find its home corner.</div>
+          </div>
+        </div>
+        <details class="disclose">
+          <summary id="sSetupSum">Machine setup and tests</summary>
+          <div class="btnrow">
+            <button class="btn ghost sm" id="sSettings" hidden>Send machine settings</button>
+            <button class="btn ghost sm" id="sReset">Reset machine settings</button>
+            <button class="btn ghost sm" id="sFlipX">Flip X direction</button>
+            <button class="btn ghost sm" id="sFlipY">Flip Y direction</button>
+            <button class="btn ghost sm" id="sSquare">Draw 100 mm test square</button>
+            <button class="btn ghost sm" id="sUnlock">Unlock</button>
+          </div>
+          <p class="note" id="sSetupPen">Press each limit switch by hand: its label must change to pressed. If Home drives an axis away from its switch, press Stop, flip that axis and Home again. The test square should measure 100 mm per side. Unlock lets you jog and use the pen without homing (Draw still needs Home). Reset machine settings restores the firmware defaults, both flips included.</p>
+          <p class="note" id="sSetupLine" hidden>Send machine settings once per Arduino (it remembers them). If a jog button moves the pen the wrong way, flip that axis. The test square should measure 100 mm per side.</p>
+        </details>
+        <div class="logbox">
+          <p class="log-h">Serial log</p>
+          <pre id="sLog"></pre>
+        </div>
+      </div>
+    </section>
+
+    <details class="card firmware">
+      <summary id="grblSum">Machine settings built into the pen firmware (nothing to paste)</summary>
+      <pre id="grbl"></pre>
+      <p class="note" id="grblNotePen">Built into the class firmware (grbl_pen), so there is nothing to paste. Only the four with a note are worth changing: <b>$3</b> is set by the Flip buttons, <b>$31</b> is the pen-up position of the servo, <b>$130</b> and <b>$131</b> are the machine area (a move beyond it is refused): the page sets them from Machine area under More settings when it connects. To change $31, type it in a sender app's console, e.g. <code>$31=35</code>. Pen down is not a setting: it is the Pen down value (S) in More settings, sent as M3 S70. <b>Keep pins A0, A1 and A2 empty:</b> GRBL uses them as Reset, Pause and Start.</p>
+      <p class="note" id="grblNoteLine" hidden>$100 and $101 = 40 steps/mm for 1/8 microstepping (M0 + M1 jumpers), 200-step motors and 20-tooth GT2 pulleys; 80 for 1/16, 5 for full step. Axis backwards: $3=1 flips X, $3=2 flips Y, $3=3 both. Homing and limits are off, so the switches are ignored. <b>Keep A0, A1 and A2 empty</b> (Reset, Pause, Start); the joystick on A4, A5 and D12 can stay.</p>
+      <button class="btn ghost sm" id="copyGrbl">Copy settings</button>
+    </details>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const view = $('view'), vctx = view.getContext('2d');
+  let img = null, gray = null, gw = 0, gh = 0, imgName = 'drawing';
+  let style = 'outline', trace = 'center', path = [], gcode = '', timer = null;
+  let crop = { x0: 0, y0: 0, x1: 1, y1: 1 }, fileLabel = '';
+  // machine: 'pen' = servo pen lift + homing (positions measured from the home corner),
+  //          'line' = no pen lift: one continuous line, zero set by hand where the line starts
+  let machine = 'pen', zoom = 'machine';
+  let strokes = null;                 // pen-lift mode: the strokes in drawing order, in mm from home
+  let fits = true;                    // pen-lift mode: the placed drawing is inside the machine area
+  const feedBy = { pen: 2400, line: 1500 };
+  const MIN_STROKE = 1.5;             // mm: shorter strokes are only a dot of ink, so they are dropped
+  const RETRACE_MM = 10;              // outline, pen-lift machine: up to this length a stretch is drawn twice instead of lifting the pen
+  const LOAD_S = 50;                  // servo value that holds the pen holder at drawing height while a pen is clamped
+  const RAPID = 6000, ACCEL = 200;    // class firmware: top speed (mm/min) and acceleration (mm/s2), for the time estimate
+
+  // ---------- image loading ----------
+  const IMG_EXT = /\.(jpe?g|jfif|png|gif|webp|bmp|avif|svg)$/i;
+  const fileErr = t => { $('fileErr').textContent = t || ''; };
+  let loadSeq = 0;
+  function loadFile(f) {
+    if (!f) return;
+    const name = f.name || 'pasted picture';
+    // decide by what the browser can decode, not by the file's label: some files arrive with no type at all
+    if (f.type && !f.type.startsWith('image/') && !IMG_EXT.test(name)) {
+      fileErr('"' + name + '" is not a picture. Choose a JPG or PNG file.'); return;
+    }
+    fileErr('');
+    const done = im => {
+      if (!im.width || !im.height) { fail(); return; }
+      imgName = name.replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_') || 'drawing';
+      img = im; fileLabel = name + ' (' + im.width + ' × ' + im.height + ')';
+      crop = { x0: 0, y0: 0, x1: 1, y1: 1 };
+      fileErr('');
+      prepare(true);
+    };
+    const fail = () => {
+      const heic = /\.(heic|heif)$/i.test(name) || /hei[cf]/i.test(f.type || '');
+      fileErr(heic
+        ? '"' + name + '" is an iPhone HEIC photo, which this browser cannot open. Export it as JPG first (on a Mac: open it in Preview, File > Export, Format JPEG).'
+        : 'This browser could not open "' + name + '". Save the picture as a JPG or PNG and try again.');
+    };
+    // three ways to decode, tried in turn, so the picture still opens where a page sandbox blocks one of them
+    const viaImg = src => new Promise((ok, bad) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => bad(); im.src = src; });
+    const viaBitmap = () => window.createImageBitmap
+      ? createImageBitmap(f, { imageOrientation: 'from-image' }).catch(() => createImageBitmap(f))
+      : Promise.reject();
+    const viaDataUrl = () => new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => viaImg(r.result).then(ok, bad); r.onerror = () => bad(); r.readAsDataURL(f); });
+    const viaBlobUrl = () => viaImg(URL.createObjectURL(f));
+    const my = ++loadSeq;
+    viaBitmap().catch(viaDataUrl).catch(viaBlobUrl).then(im => { if (my === loadSeq) done(im); }, () => { if (my === loadSeq) fail(); });
+  }
+  // a drop or paste can carry a file, or only a link when the picture was dragged straight out of a web page
+  function loadFrom(dt) {
+    if (!dt) return false;
+    let f = dt.files && dt.files[0];
+    if (!f && dt.items) for (const it of dt.items) if (it.kind === 'file') { f = it.getAsFile(); if (f) break; }
+    if (f) { loadFile(f); return true; }
+    const types = Array.from(dt.types || []);
+    if (types.includes('text/uri-list') || types.includes('text/html')) {
+      fileErr('That picture came straight from a web page, so only its link arrived. Right-click it and choose Copy Image, then press Ctrl/Cmd + V here. Or save it to your computer and drop the saved file.');
+    }
+    return false;
+  }
+  // grey-scale working copy of the (cropped) image; called on load and whenever the crop changes
+  function prepare(fresh) {
+    const sx = Math.round(crop.x0 * img.width), sy = Math.round(crop.y0 * img.height);
+    const sw = Math.max(2, Math.round((crop.x1 - crop.x0) * img.width)), sh = Math.max(2, Math.round((crop.y1 - crop.y0) * img.height));
+    const maxSide = 700, k = Math.min(2, maxSide / Math.max(sw, sh));
+    gw = Math.max(2, Math.round(sw * k)); gh = Math.max(2, Math.round(sh * k));
+    const c = document.createElement('canvas'); c.width = gw; c.height = gh;
+    const cx = c.getContext('2d');
+    cx.fillStyle = '#fff'; cx.fillRect(0, 0, gw, gh);   // transparent -> white
+    cx.imageSmoothingQuality = 'high';
+    cx.drawImage(img, sx, sy, sw, sh, 0, 0, gw, gh);
+    const d = cx.getImageData(0, 0, gw, gh).data;
+    gray = new Float32Array(gw * gh);
+    for (let i = 0; i < gw * gh; i++) gray[i] = 0.299 * d[4*i] + 0.587 * d[4*i+1] + 0.114 * d[4*i+2];
+    // auto-levels: stretch the 2nd..98th percentile to full black..white so dull photos still read
+    const hist = new Uint32Array(256); for (let i = 0; i < gw * gh; i++) hist[Math.round(gray[i])]++;
+    let lo = 0, hi = 255, acc = 0; const n2 = gw * gh * 0.02;
+    for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc > n2) { lo = v; break; } }
+    acc = 0; for (let v = 255; v >= 0; v--) { acc += hist[v]; if (acc > n2) { hi = v; break; } }
+    if (hi - lo > 10) for (let i = 0; i < gw * gh; i++) gray[i] = Math.min(255, Math.max(0, (gray[i] - lo) * 255 / (hi - lo)));
+    // sensible outline defaults for this picture: Otsu cut-off, and lines-vs-shapes guess
+    const t = otsu(gray);
+    $('thresh').value = Math.min(245, Math.max(10, t)); $('threshV').textContent = $('thresh').value;
+    if (fresh) { $('invert').checked = false; $('sil').checked = false; }
+    setTrace(guessTrace());
+    $('dropText').textContent = fileLabel + '  ·  click to change';
+    $('thumb').hidden = false; $('cropHint').hidden = false; drawThumb();
+    schedule();
+  }
+  function otsu(g) {
+    const hist = new Float64Array(256); for (let i = 0; i < g.length; i++) hist[Math.min(255, Math.round(g[i]))]++;
+    let sum = 0; for (let v = 0; v < 256; v++) sum += v * hist[v];
+    let wB = 0, sumB = 0, best = 128, bestVar = -1; const total = g.length;
+    for (let v = 0; v < 256; v++) {
+      wB += hist[v]; if (!wB) continue; const wF = total - wB; if (!wF) break;
+      sumB += v * hist[v];
+      const mB = sumB / wB, mF = (sum - sumB) / wF, between = wB * wF * (mB - mF) * (mB - mF);
+      if (between > bestVar) { bestVar = between; best = v; }
+    }
+    return best;
+  }
+  // thin dark strokes -> follow the middle of the lines; solid shapes -> trace around them
+  function guessTrace() {
+    const thr = num('thresh'); let area = 0, per = 0;
+    for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+      const dk = gray[y * gw + x] < thr; if (dk) area++;
+      if (x + 1 < gw && dk !== (gray[y * gw + x + 1] < thr)) per++;
+      if (y + 1 < gh && dk !== (gray[(y + 1) * gw + x] < thr)) per++;
+    }
+    if (!per) return 'edge';
+    return (2 * area / per) < 0.012 * Math.max(gw, gh) + 2 ? 'center' : 'edge';
+  }
+  function setTrace(t) {
+    trace = t;
+    [...$('traceSeg').children].forEach(x => x.classList.toggle('on', x.dataset.trace === t));
+    $('silRow').hidden = t !== 'edge';
+  }
+
+  // ---------- thumbnail with drag-to-crop ----------
+  const thumb = $('thumb'), tctx = thumb.getContext('2d');
+  let dragRect = null;
+  function drawThumb() {
+    if (!img) return;
+    const tw = 596, th = Math.max(40, Math.min(520, Math.round(tw * img.height / img.width)));
+    if (thumb.width !== tw || thumb.height !== th) { thumb.width = tw; thumb.height = th; }
+    tctx.fillStyle = '#fff'; tctx.fillRect(0, 0, tw, th);
+    tctx.drawImage(img, 0, 0, tw, th);
+    const r = dragRect || crop;
+    if (r.x0 > 0 || r.y0 > 0 || r.x1 < 1 || r.y1 < 1) {
+      tctx.fillStyle = 'rgba(20,28,45,.55)';
+      tctx.fillRect(0, 0, tw, r.y0 * th); tctx.fillRect(0, r.y1 * th, tw, th - r.y1 * th);
+      tctx.fillRect(0, r.y0 * th, r.x0 * tw, (r.y1 - r.y0) * th); tctx.fillRect(r.x1 * tw, r.y0 * th, tw - r.x1 * tw, (r.y1 - r.y0) * th);
+      tctx.strokeStyle = '#2a6df4'; tctx.lineWidth = 3;
+      tctx.strokeRect(r.x0 * tw, r.y0 * th, (r.x1 - r.x0) * tw, (r.y1 - r.y0) * th);
+    }
+  }
+  const norm = e => { const b = thumb.getBoundingClientRect(); return [Math.min(1, Math.max(0, (e.clientX - b.left) / b.width)), Math.min(1, Math.max(0, (e.clientY - b.top) / b.height))]; };
+  let dragFrom = null;
+  thumb.addEventListener('pointerdown', e => { if (!img) return; dragFrom = norm(e); try { thumb.setPointerCapture(e.pointerId); } catch (err) {} });
+  thumb.addEventListener('pointermove', e => {
+    if (!dragFrom) return; const q = norm(e);
+    dragRect = { x0: Math.min(dragFrom[0], q[0]), y0: Math.min(dragFrom[1], q[1]), x1: Math.max(dragFrom[0], q[0]), y1: Math.max(dragFrom[1], q[1]) };
+    drawThumb();
+  });
+  const endDrag = () => {
+    if (!dragFrom) return; dragFrom = null;
+    const r = dragRect; dragRect = null;
+    if (r && r.x1 - r.x0 > 0.05 && r.y1 - r.y0 > 0.05) { crop = r; prepare(false); } else drawThumb();
+  };
+  thumb.addEventListener('pointerup', endDrag); thumb.addEventListener('pointercancel', endDrag);
+  thumb.addEventListener('dblclick', () => { if (!img) return; crop = { x0: 0, y0: 0, x1: 1, y1: 1 }; prepare(false); });
+
+  $('file').addEventListener('change', e => { loadFile(e.target.files[0]); e.target.value = ''; });
+  const drop = $('drop');
+  ['dragenter','dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('drop', e => { e.preventDefault(); loadFrom(e.dataTransfer); });
+  window.addEventListener('paste', e => {
+    const t = e.target, typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+    const cd = e.clipboardData;
+    const hasFile = cd && ((cd.files && cd.files.length) || Array.from(cd.items || []).some(it => it.kind === 'file'));
+    if (hasFile) { e.preventDefault(); loadFrom(cd); }
+    else if (!typing) fileErr('There is no picture on the clipboard. Right-click a picture and choose Copy Image first.');
+  });
+
+  // ---------- controls ----------
+  const num = id => parseFloat($(id).value);
+  [['bright',0],['contrast',1],['rows',0],['amp',2],['freq',1],['dots',0],['gamma',1],['thresh',0],['simp',0]].forEach(([id, dp]) => {
+    const upd = () => { $(id + 'V').textContent = num(id).toFixed(dp); };
+    $(id).addEventListener('input', () => { upd(); schedule(); }); upd();
+  });
+  ['invert','sil'].forEach(id => $(id).addEventListener('input', schedule));
+  ['width','feed','mx','my','down','pause','areaX','areaY'].forEach(id => $(id).addEventListener('input', () => { fieldsChanged(); schedule(); }));
+  ['areaX', 'areaY'].forEach(id => $(id).addEventListener('change', async () => {
+    if (machine !== 'pen' || !S.on || S.starting || S.job || S.busy) return;      // otherwise the next connect does it
+    const m = await syncArea(); if (m) smsg(m);
+  }));
+  $('machSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.disabled || b.dataset.machine === machine) return; setMachine(b.dataset.machine); });
+  $('zoomSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    zoom = b.dataset.zoom;
+    [...$('zoomSeg').children].forEach(x => x.classList.toggle('on', x === b));
+    schedule();
+  });
+  $('traceSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; setTrace(b.dataset.trace); schedule(); });
+  $('styleSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    style = b.dataset.style;
+    [...$('styleSeg').children].forEach(x => x.classList.toggle('on', x === b));
+    $('rowsOpts').hidden = style !== 'rows'; $('tspOpts').hidden = style !== 'tsp';
+    $('outlineOpts').hidden = style !== 'outline'; $('toneOpts').hidden = style === 'outline';
+    schedule();
+  });
+  function schedule() { clearTimeout(timer); timer = setTimeout(build, 120); }
+
+  // ---------- machine choice + remembered settings ----------
+  const LINE_GRBL = '$0=10\n$1=25\n$3=0\n$4=0\n$5=0\n$20=0\n$21=0\n$22=0\n$100=40\n$101=40\n$110=3000\n$111=3000\n$120=100\n$121=100';
+  // what the class firmware (grbl_pen) answers to $$ on a new Arduino; a note on the few settings a student may touch
+  const PEN_GRBL = [['$0=10'], ['$1=255'], ['$2=0'], ['$3=0', 'motor directions: 1 flips X, 2 flips Y, 3 flips both'], ['$4=0'], ['$5=1'], ['$6=0'], ['$10=1'], ['$11=0.010'], ['$12=0.002'], ['$13=0'],
+    ['$20=1'], ['$21=0'], ['$22=1'], ['$23=3'], ['$24=150.000'], ['$25=1500.000'], ['$26=250'], ['$27=3.000'], ['$30=180'], ['$31=30', 'pen-up angle of the servo, in degrees'], ['$32=0'],
+    ['$100=40.000'], ['$101=40.000'], ['$102=40.000'], ['$110=6000.000'], ['$111=6000.000'], ['$112=6000.000'], ['$120=200.000'], ['$121=200.000'], ['$122=200.000'],
+    ['$130=260.000', 'machine area in X, mm from home'], ['$131=240.000', 'machine area in Y, mm from home'], ['$132=10.000']]
+    .map(([set, why]) => why ? (set + '              ').slice(0, 14) + '(' + why + ')' : set).join('\n');
+  const clampN = (v, lo, hi, dflt) => isFinite(v) ? Math.min(hi, Math.max(lo, v)) : dflt;
+  // the numbers of the pen-lift machine, cleaned up (an empty box counts as its default)
+  function penSet() {
+    return {
+      ax: clampN(num('areaX'), 10, 5000, 260), ay: clampN(num('areaY'), 10, 5000, 240),
+      mx: clampN(num('mx'), 0, 5000, 10), my: clampN(num('my'), 0, 5000, 10),
+      down: Math.round(clampN(num('down'), 0, 180, 70) * 10) / 10,
+      pause: Math.round(clampN(num('pause'), 0, 5, 0.2) * 100) / 100
+    };
+  }
+  // settings are remembered in this browser where that is allowed (it is not inside some embedded viewers)
+  const KEY = 'img2gcode.machine.v1';
+  const NUMF = { width: [10, 2000], mx: [0, 2000], my: [0, 2000], down: [0, 180], pause: [0, 5], areaX: [10, 5000], areaY: [10, 5000] };   // field: smallest and largest value taken back
+  // The machine area changed (340 x 190, then 310 x 290, 260 x 260, now 260 x 240): an area remembered by an earlier version
+  // of this page is not taken back, so the new default shows. An area typed in from this version on carries this mark and is kept.
+  const AREA_V = 4;
+  function loadPrefs() {
+    let o = null;
+    try { o = JSON.parse(window.localStorage.getItem(KEY) || 'null'); } catch (e) { o = null; }
+    if (!o || typeof o !== 'object') return;
+    try {
+      for (const id in NUMF) if (typeof o[id] === 'number' && o[id] >= NUMF[id][0] && o[id] <= NUMF[id][1] && (o.areaV === AREA_V || !/^area/.test(id))) $(id).value = o[id];
+      for (const k of ['pen', 'line']) if (o.feed && typeof o.feed[k] === 'number' && o.feed[k] >= 50 && o.feed[k] <= 20000) feedBy[k] = o.feed[k];
+      if (o.machine === 'line' || o.machine === 'pen') machine = o.machine;
+    } catch (e) {}
+  }
+  function savePrefs() {
+    const o = { machine, feed: { pen: feedBy.pen, line: feedBy.line }, areaV: AREA_V };
+    for (const id in NUMF) { const v = num(id); if (isFinite(v)) o[id] = v; }
+    try { window.localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {}
+  }
+  function setLimits() {
+    const p = penSet(), pen = machine === 'pen';
+    $('width').max = pen ? Math.max(20, Math.floor(p.ax - p.mx)) : 220;
+    $('mx').max = Math.max(0, Math.floor(p.ax - 20)); $('my').max = Math.max(0, Math.floor(p.ay - 20));
+  }
+  function fieldsChanged() {
+    const f = num('feed'); if (isFinite(f) && f > 0) feedBy[machine] = f;
+    setLimits(); savePrefs();
+  }
+  function setMachine(m, starting) {
+    machine = m === 'line' ? 'line' : 'pen';
+    const pen = machine === 'pen';
+    [...$('machSeg').children].forEach(x => x.classList.toggle('on', x.dataset.machine === machine));
+    [['introPen', 1], ['introLine', 0], ['step3Pen', 1], ['step3Line', 0], ['machHintPen', 1], ['machHintLine', 0], ['penOpts', 1], ['viewBar', 1], ['statStrokes', 1], ['statStart', 0],
+      ['notePen', 1], ['noteLine', 0], ['sSetupPen', 1], ['sSetupLine', 0], ['grblNotePen', 1], ['grblNoteLine', 0], ['copyGrbl', 0]].forEach(([id, forPen]) => { $(id).hidden = pen ? !forPen : !!forPen; });
+    $('feed').value = feedBy[machine]; $('feed').max = pen ? 6000 : 3000;
+    setLimits();
+    $('grbl').textContent = pen ? PEN_GRBL : LINE_GRBL;
+    $('grblSum').textContent = pen ? 'Machine settings built into the pen firmware (nothing to paste)' : 'GRBL settings for this machine (paste once after flashing GRBL)';
+    $('sSetupSum').textContent = pen ? 'Machine setup and tests' : 'First-time machine setup';
+    $('warn').classList.remove('bad');
+    sMode();
+    if (!starting) { savePrefs(); schedule(); }
+  }
+
+  // ---------- helpers ----------
+  // darkness 0..1 at drawing coords (mm, origin bottom-left)
+  function makeDark(Wmm, Hmm) {
+    const b = num('bright'), c = num('contrast'), inv = $('invert').checked;
+    return (x, y) => {
+      let px = Math.min(gw - 1, Math.max(0, Math.floor(x / Wmm * gw)));
+      let py = Math.min(gh - 1, Math.max(0, Math.floor((1 - y / Hmm) * gh)));
+      let v = (gray[py * gw + px] - 128) * c + 128 + b;
+      v = Math.min(255, Math.max(0, v));
+      const d = 1 - v / 255;
+      return inv ? 1 - d : d;
+    };
+  }
+  function rng(seed) { let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  // Ramer-Douglas-Peucker, iterative, keeps first and last
+  function simplify(pts, tol) {
+    const n = pts.length; if (n < 3) return pts;
+    const keep = new Uint8Array(n); keep[0] = keep[n-1] = 1;
+    const stack = [[0, n - 1]], t2 = tol * tol;
+    while (stack.length) {
+      const [a, b] = stack.pop();
+      const ax = pts[a][0], ay = pts[a][1], dx = pts[b][0] - ax, dy = pts[b][1] - ay, L = dx*dx + dy*dy;
+      let worst = -1, wi = -1;
+      for (let i = a + 1; i < b; i++) {
+        const px = pts[i][0] - ax, py = pts[i][1] - ay;
+        let d2;
+        if (L === 0) d2 = px*px + py*py;
+        else { const cr = px*dy - py*dx; d2 = cr*cr / L; }
+        if (d2 > worst) { worst = d2; wi = i; }
+      }
+      if (worst > t2) { keep[wi] = 1; stack.push([a, wi], [wi, b]); }
+    }
+    const out = []; for (let i = 0; i < n; i++) if (keep[i]) out.push(pts[i]);
+    return out;
+  }
+
+  // ---------- style 1: serpentine squiggle rows ----------
+  function buildRows(W, H, dark) {
+    const rows = Math.round(num('rows')), s = H / rows;
+    const amp = num('amp'), freq = num('freq');
+    const lambda = s * 1.2 / freq;                 // wavelength in mm at full darkness
+    const dx = Math.max(0.05, lambda / 12);
+    const pts = [[0, 0]];
+    let phase = 0;
+    for (let r = 0; r < rows; r++) {
+      const yc = s * (r + 0.5);
+      const ltr = r % 2 === 0;
+      const n = Math.ceil(W / dx);
+      for (let i = 0; i <= n; i++) {
+        const t = Math.min(W, i * dx), x = ltr ? t : W - t;
+        const d = dark(x, yc);
+        phase += 2 * Math.PI * (dx / lambda) * (0.15 + 0.85 * d);
+        const a = d * s * 0.5 * amp;
+        let y = yc + a * Math.sin(phase);
+        y = Math.max(0, Math.min(H, y));
+        pts.push([x, y]);
+      }
+    }
+    return simplify(pts, 0.02);
+  }
+
+  // ---------- style 2: stipple + nearest-neighbour + 2-opt (one line) ----------
+  function buildTSP(W, H, dark) {
+    const N = Math.round(num('dots')), g = num('gamma'), R = rng(12345);
+    const P = [[0, 0]];
+    let tries = 0;
+    while (P.length < N + 1 && tries < N * 400) {
+      tries++;
+      const x = R() * W, y = R() * H;
+      if (R() < Math.pow(dark(x, y), g)) P.push([x, y]);
+    }
+    const n = P.length;
+    if (n < 3) return P;
+    // nearest neighbour with a grid
+    const cell = Math.sqrt(W * H / n) * 1.5, gx = Math.ceil(W / cell) + 1, gy = Math.ceil(H / cell) + 1;
+    const grid = Array.from({ length: gx * gy }, () => []);
+    const ci = p => Math.min(gx - 1, Math.floor(p[0] / cell)) + gx * Math.min(gy - 1, Math.floor(p[1] / cell));
+    for (let i = 1; i < n; i++) grid[ci(P[i])].push(i);
+    const all = grid.map(l => l.slice()); all[ci(P[0])].push(0);
+    const used = new Uint8Array(n); used[0] = 1;
+    const order = [0]; let cur = 0;
+    for (let k = 1; k < n; k++) {
+      const cx = Math.floor(P[cur][0] / cell), cy = Math.floor(P[cur][1] / cell);
+      let best = -1, bd = Infinity;
+      for (let rad = 0; rad < Math.max(gx, gy) + 1; rad++) {
+        for (let yy = cy - rad; yy <= cy + rad; yy++) {
+          if (yy < 0 || yy >= gy) continue;
+          for (let xx = cx - rad; xx <= cx + rad; xx++) {
+            if (xx < 0 || xx >= gx) continue;
+            if (Math.max(Math.abs(xx - cx), Math.abs(yy - cy)) !== rad) continue;
+            const list = grid[xx + gx * yy];
+            for (let j = list.length - 1; j >= 0; j--) {
+              const id = list[j];
+              if (used[id]) { list[j] = list[list.length - 1]; list.pop(); continue; }
+              const ddx = P[id][0] - P[cur][0], ddy = P[id][1] - P[cur][1], dd = ddx*ddx + ddy*ddy;
+              if (dd < bd) { bd = dd; best = id; }
+            }
+          }
+        }
+        if (best >= 0 && Math.sqrt(bd) <= rad * cell) break;
+      }
+      used[best] = 1; order.push(best); cur = best;
+    }
+    // 2-opt on an open path with nearest-neighbour candidate lists; point 0 (the origin) stays first
+    const K = 8, nbr = new Int32Array(n * K).fill(-1);
+    for (let i = 0; i < n; i++) {
+      const cx = Math.floor(P[i][0] / cell), cy = Math.floor(P[i][1] / cell);
+      const best = [];
+      for (let rad = 0; rad < Math.max(gx, gy) + 1; rad++) {
+        for (let yy = cy - rad; yy <= cy + rad; yy++) {
+          if (yy < 0 || yy >= gy) continue;
+          for (let xx = cx - rad; xx <= cx + rad; xx++) {
+            if (xx < 0 || xx >= gx) continue;
+            if (Math.max(Math.abs(xx - cx), Math.abs(yy - cy)) !== rad) continue;
+            for (const id of all[xx + gx * yy]) {
+              if (id === i) continue;
+              const dd = (P[id][0] - P[i][0]) ** 2 + (P[id][1] - P[i][1]) ** 2;
+              best.push([dd, id]);
+            }
+          }
+        }
+        if (best.length >= K && rad >= 1) {
+          best.sort((a, b) => a[0] - b[0]);
+          if (Math.sqrt(best[K - 1][0]) <= rad * cell) break;
+        }
+      }
+      best.sort((a, b) => a[0] - b[0]);
+      for (let k = 0; k < Math.min(K, best.length); k++) nbr[i * K + k] = best[k][1];
+    }
+    const T = Int32Array.from(order), pos = new Int32Array(n);
+    for (let i = 0; i < n; i++) pos[T[i]] = i;
+    const d = (u, v) => Math.hypot(P[u][0] - P[v][0], P[u][1] - P[v][1]);
+    // replace edges (T[i],T[i+1]) and (T[j],T[j+1]) with (T[i],T[j]) and (T[i+1],T[j+1]); i < j - 1
+    const tryMove = (i, j) => {
+      const a = T[i], b = T[i + 1], c = T[j], e = j + 1 < n ? T[j + 1] : -1;
+      const gain = d(a, b) + (e >= 0 ? d(c, e) : 0) - d(a, c) - (e >= 0 ? d(b, e) : 0);
+      if (gain <= 1e-7) return false;
+      for (let x = i + 1, y = j; x < y; x++, y--) { const t = T[x]; T[x] = T[y]; T[y] = t; pos[T[x]] = x; pos[T[y]] = y; }
+      return true;
+    };
+    const t0 = performance.now();
+    let improved = true;
+    while (improved && performance.now() - t0 < 2000) {
+      improved = false;
+      for (let i = 0; i < n - 1; i++) {
+        for (let k = 0; k < K; k++) {
+          const c = nbr[T[i] * K + k]; if (c < 0) break;
+          const j = pos[c];
+          if (j > i + 1) { if (tryMove(i, j)) improved = true; }
+          else if (j < i - 1) { if (tryMove(j, i)) improved = true; }
+        }
+      }
+    }
+    const X = new Float64Array(n), Y = new Float64Array(n);
+    for (let i = 0; i < n; i++) { X[i] = P[T[i]][0]; Y[i] = P[T[i]][1]; }
+    const out = []; for (let i = 0; i < n; i++) out.push([X[i], Y[i]]);
+    return out;
+  }
+
+  // ---------- style 3: outline, drawn as one unbroken line ----------
+  function boxBlur(src, w, h, r) {
+    if (r < 1) return src;
+    const tmp = new Float32Array(w * h), out = new Float32Array(w * h), win = 2 * r + 1;
+    for (let y = 0; y < h; y++) {
+      let acc = 0; const o = y * w;
+      for (let x = -r; x <= r; x++) acc += src[o + Math.min(w - 1, Math.max(0, x))];
+      for (let x = 0; x < w; x++) { tmp[o + x] = acc / win; acc += src[o + Math.min(w - 1, x + r + 1)] - src[o + Math.max(0, x - r)]; }
+    }
+    for (let x = 0; x < w; x++) {
+      let acc = 0;
+      for (let y = -r; y <= r; y++) acc += tmp[Math.min(h - 1, Math.max(0, y)) * w + x];
+      for (let y = 0; y < h; y++) { out[y * w + x] = acc / win; acc += tmp[Math.min(h - 1, y + r + 1) * w + x] - tmp[Math.max(0, y - r) * w + x]; }
+    }
+    return out;
+  }
+  // 4-connected regions of pixels equal to val
+  function regions(mask, w, h, val) {
+    const lab = new Int32Array(w * h).fill(-1), areas = [], touch = [], stack = new Int32Array(w * h);
+    for (let s0 = 0; s0 < w * h; s0++) {
+      if (mask[s0] !== val || lab[s0] >= 0) continue;
+      const id = areas.length; let sp = 0, a = 0, t = 0; stack[sp++] = s0; lab[s0] = id;
+      while (sp) {
+        const q = stack[--sp]; a++; const x = q % w, y = (q - x) / w;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) t = 1;
+        if (x > 0 && mask[q - 1] === val && lab[q - 1] < 0) { lab[q - 1] = id; stack[sp++] = q - 1; }
+        if (x < w - 1 && mask[q + 1] === val && lab[q + 1] < 0) { lab[q + 1] = id; stack[sp++] = q + 1; }
+        if (y > 0 && mask[q - w] === val && lab[q - w] < 0) { lab[q - w] = id; stack[sp++] = q - w; }
+        if (y < h - 1 && mask[q + w] === val && lab[q + w] < 0) { lab[q + w] = id; stack[sp++] = q + w; }
+      }
+      areas.push(a); touch.push(t);
+    }
+    return { lab, areas, touch };
+  }
+  // Zhang-Suen thinning: shrinks every dark stroke to a 1-pixel-wide centre line (mask border must be 0)
+  function thin(mask, w) {
+    let list = []; for (let i = 0; i < mask.length; i++) if (mask[i]) list.push(i);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (let pass = 0; pass < 2; pass++) {
+        const del = [];
+        for (let k = 0; k < list.length; k++) {
+          const q = list[k];
+          const p2 = mask[q - w], p3 = mask[q - w + 1], p4 = mask[q + 1], p5 = mask[q + w + 1], p6 = mask[q + w], p7 = mask[q + w - 1], p8 = mask[q - 1], p9 = mask[q - w - 1];
+          const B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9; if (B < 2 || B > 6) continue;
+          const A = (p2 === 0 && p3 === 1) + (p3 === 0 && p4 === 1) + (p4 === 0 && p5 === 1) + (p5 === 0 && p6 === 1) + (p6 === 0 && p7 === 1) + (p7 === 0 && p8 === 1) + (p8 === 0 && p9 === 1) + (p9 === 0 && p2 === 1);
+          if (A !== 1) continue;
+          if (pass === 0) { if (p2 * p4 * p6 || p4 * p6 * p8) continue; } else { if (p2 * p4 * p8 || p2 * p6 * p8) continue; }
+          del.push(q);
+        }
+        if (del.length) { changed = true; for (const q of del) mask[q] = 0; list = list.filter(q => mask[q]); }
+      }
+    }
+    return list;
+  }
+  function csr(nV, eu, ev) {
+    const E = eu.length, start = new Int32Array(nV + 1);
+    for (let e = 0; e < E; e++) { start[eu[e] + 1]++; start[ev[e] + 1]++; }
+    for (let v = 0; v < nV; v++) start[v + 1] += start[v];
+    const fill = start.slice(0, nV), to = new Int32Array(2 * E), eid = new Int32Array(2 * E);
+    for (let e = 0; e < E; e++) { const a = eu[e], b = ev[e]; to[fill[a]] = b; eid[fill[a]++] = e; to[fill[b]] = a; eid[fill[b]++] = e; }
+    return { start, to, eid };
+  }
+
+  function buildOutline(Wmm, lift) {
+    const w = gw, h = gh, n = w * h, inv = $('invert').checked, thr = num('thresh'), simp = num('simp');
+    const center = trace === 'center', sil = !center && $('sil').checked, notes = [];
+    const r = Math.round(simp * (center ? 0.25 : 0.4));
+    const g = r > 0 ? boxBlur(boxBlur(gray, w, h, r), w, h, r) : gray;
+    const mask = new Uint8Array(n);
+    for (let i = 0; i < n; i++) mask[i] = ((g[i] < thr) !== inv) ? 1 : 0;
+
+    // clean up: drop specks; when tracing around shapes also fill pin-holes
+    const minArea = Math.max(6, Math.round(n * (center ? 0.00002 * (1 + simp) : 0.00004 + simp * 0.00008)));
+    let c = regions(mask, w, h, 1);
+    if (!c.areas.length) return null;
+    let big = 0; for (let k = 1; k < c.areas.length; k++) if (c.areas[k] > c.areas[big]) big = k;
+    for (let i = 0; i < n; i++) if (mask[i]) { const id = c.lab[i]; if (c.areas[id] < minArea || (sil && id !== big)) mask[i] = 0; }
+    if (!center) {
+      c = regions(mask, w, h, 0);
+      for (let i = 0; i < n; i++) if (!mask[i]) { const id = c.lab[i]; if (c.areas[id] < minArea || (sil && !c.touch[id])) mask[i] = 1; }
+    }
+
+    // build a graph of unit steps: around the shapes (pixel borders) or along the thinned centre lines
+    let GW, GH, eu = [], ev = [];
+    if (!center) {
+      GW = w + 1; GH = h + 1;
+      const at = (x, y) => (x >= 0 && y >= 0 && x < w && y < h) ? mask[y * w + x] : 0;
+      for (let y = 0; y <= h; y++) for (let x = 0; x <= w; x++) {
+        if (x < w && at(x, y - 1) !== at(x, y)) { eu.push(y * GW + x); ev.push(y * GW + x + 1); }
+        if (y < h && at(x - 1, y) !== at(x, y)) { eu.push(y * GW + x); ev.push((y + 1) * GW + x); }
+      }
+    } else {
+      GW = w; GH = h;
+      for (let x = 0; x < w; x++) { mask[x] = 0; mask[(h - 1) * w + x] = 0; }
+      for (let y = 0; y < h; y++) { mask[y * w] = 0; mask[y * w + w - 1] = 0; }
+      let area = 0; for (let i = 0; i < n; i++) area += mask[i];
+      const skel = thin(mask, w);
+      if (!skel.length) return null;
+      for (const q of skel) {
+        if (mask[q + 1]) { eu.push(q); ev.push(q + 1); }
+        if (mask[q + w]) { eu.push(q); ev.push(q + w); }
+        if (mask[q + w + 1] && !mask[q + 1] && !mask[q + w]) { eu.push(q); ev.push(q + w + 1); }
+        if (mask[q + w - 1] && !mask[q - 1] && !mask[q + w]) { eu.push(q); ev.push(q + w - 1); }
+      }
+      // prune the short side-twigs that thinning leaves on thick strokes
+      const G0 = csr(GW * GH, eu, ev), deg0 = v => G0.start[v + 1] - G0.start[v];
+      const spur = Math.round(Math.min(40, Math.max(6, 1.5 * area / skel.length)));
+      const dead = new Uint8Array(GW * GH);
+      for (const v0 of skel) {
+        if (deg0(v0) !== 1) continue;
+        const chain = [v0]; let prev = -1, cur = v0, hit = false;
+        while (chain.length <= spur) {
+          let nxt = -1; for (let i = G0.start[cur]; i < G0.start[cur + 1]; i++) if (G0.to[i] !== prev) { nxt = G0.to[i]; break; }
+          if (nxt < 0) break;
+          if (deg0(nxt) >= 3) { hit = true; break; }
+          prev = cur; cur = nxt; chain.push(cur);
+          if (deg0(cur) === 1) break;
+        }
+        if (hit) for (const v of chain) dead[v] = 1;
+      }
+      const eu2 = [], ev2 = [];
+      for (let e = 0; e < eu.length; e++) if (!dead[eu[e]] && !dead[ev[e]]) { eu2.push(eu[e]); ev2.push(ev[e]); }
+      eu = eu2; ev = ev2;
+    }
+    const nV = GW * GH;
+    if (!eu.length) return null;
+
+    // connected pieces; keep the big ones
+    let G = csr(nV, eu, ev);
+    const comp = new Int32Array(nV).fill(-1), queue = new Int32Array(nV);
+    let compEdges = [], compVerts = [];
+    for (let e = 0; e < eu.length; e++) {
+      const v0 = eu[e]; if (comp[v0] >= 0) continue;
+      const id = compVerts.length, verts = []; let qh = 0, qt = 0, halfEdges = 0;
+      queue[qt++] = v0; comp[v0] = id;
+      while (qh < qt) {
+        const v = queue[qh++]; verts.push(v); halfEdges += G.start[v + 1] - G.start[v];
+        for (let i = G.start[v]; i < G.start[v + 1]; i++) { const u = G.to[i]; if (comp[u] < 0) { comp[u] = id; queue[qt++] = u; } }
+      }
+      compVerts.push(verts); compEdges.push(halfEdges / 2);
+    }
+    const minEdges = center ? 10 + simp * 4 : 0, MAXC = lift ? 400 : 60;
+    let order = compEdges.map((_, i) => i).filter(i => compEdges[i] >= minEdges).sort((a, b) => compEdges[b] - compEdges[a]);
+    if (!order.length) order = [compEdges.indexOf(Math.max(...compEdges))];
+    if (order.length > MAXC) { notes.push('Only the ' + MAXC + ' biggest parts were kept: raise Simplify for a cleaner drawing.'); order = order.slice(0, MAXC); }
+    const keepC = new Uint8Array(compVerts.length); for (const i of order) keepC[i] = 1;
+    { const eu2 = [], ev2 = []; for (let e = 0; e < eu.length; e++) if (keepC[comp[eu[e]]]) { eu2.push(eu[e]); ev2.push(ev[e]); } eu = eu2; ev = ev2; }
+    for (let v = 0; v < nV; v++) if (comp[v] >= 0 && !keepC[comp[v]]) comp[v] = -1;
+
+    // pen-lift machine: every separate part is drawn on its own, with the pen lifted in between
+    if (lift) return liftStrokes(Wmm, simp, GW, nV, eu, ev, comp, compVerts, order, queue, notes);
+
+    // join separate pieces with connector lines (drawn out and back, because the pen cannot lift)
+    let bridges = 0;
+    if (order.length > 1) {
+      const src = new Int32Array(nV).fill(-1), attached = new Uint8Array(compVerts.length);
+      let qh = 0, qt = 0, left = order.length - 1;
+      const addComp = id => { attached[id] = 1; for (const v of compVerts[id]) { if (src[v] < 0) queue[qt++] = v; src[v] = v; } };
+      // the queue can hold each grid cell once
+      addComp(order[0]);
+      while (qh < qt && left > 0) {
+        const q = queue[qh++], x = q % GW, y = (q - x) / GW;
+        for (let dy = -1; dy <= 1 && left > 0; dy++) for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue;
+          const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= GW || yy >= GH) continue;
+          const t = yy * GW + xx; if (src[t] >= 0) continue;
+          const ct = comp[t];
+          if (ct >= 0 && !attached[ct]) {
+            eu.push(src[q], src[q]); ev.push(t, t); bridges++; left--;
+            addComp(ct);
+            if (left === 0) break;
+          } else { src[t] = src[q]; queue[qt++] = t; }
+        }
+      }
+    }
+
+    // make every junction even by re-drawing the shortest stretch between pairs of odd points,
+    // so that one stroke can cover everything (an Euler trail)
+    G = csr(nV, eu, ev);
+    const degree = v => G.start[v + 1] - G.start[v];
+    let odd = []; for (let v = 0; v < nV; v++) if (degree(v) & 1) odd.push(v);
+    if (odd.length > 2) {
+      const stamp = new Int32Array(nV), par = new Int32Array(nV), isOdd = new Uint8Array(nV);
+      for (const v of odd) isOdd[v] = 1;
+      let epoch = 0;
+      const nearest = (u, wantPath) => {
+        epoch++; let qh = 0, qt = 0; queue[qt++] = u; stamp[u] = epoch; par[u] = -1;
+        const depth = new Map(); depth.set(u, 0);
+        while (qh < qt) {
+          const v = queue[qh++];
+          if (v !== u && isOdd[v]) {
+            let d = 0; const pathV = [v]; let t = v; while (par[t] >= 0) { t = par[t]; d++; if (wantPath) pathV.push(t); }
+            return { v, d, pathV };
+          }
+          for (let i = G.start[v]; i < G.start[v + 1]; i++) { const t = G.to[i]; if (stamp[t] !== epoch) { stamp[t] = epoch; par[t] = v; queue[qt++] = t; } }
+        }
+        return null;
+      };
+      let remaining = odd.length, guard = 0;
+      while (remaining > 2 && guard++ < 50) {
+        const cand = [];
+        for (const u of odd) if (isOdd[u]) { const r2 = nearest(u, false); if (r2) cand.push([r2.d, u]); }
+        cand.sort((a, b) => a[0] - b[0]);
+        for (const [, u] of cand) {
+          if (remaining <= 2) break;
+          if (!isOdd[u]) continue;
+          const r2 = nearest(u, true); if (!r2) continue;
+          for (let i = 0; i + 1 < r2.pathV.length; i++) { eu.push(r2.pathV[i]); ev.push(r2.pathV[i + 1]); }
+          isOdd[u] = 0; isOdd[r2.v] = 0; remaining -= 2;
+        }
+      }
+      G = csr(nV, eu, ev);
+      odd = []; for (let v = 0; v < nV; v++) if (degree(v) & 1) odd.push(v);
+    }
+
+    // one stroke through every edge (Hierholzer)
+    const px = v => v % GW, py = v => (v - v % GW) / GW;
+    const score = v => px(v) - py(v);                 // small = towards the bottom-left of the picture
+    let startV;
+    if (odd.length >= 2) startV = score(odd[0]) <= score(odd[1]) ? odd[0] : odd[1];
+    else { startV = eu[0]; for (let e = 0; e < eu.length; e++) { if (score(eu[e]) < score(startV)) startV = eu[e]; if (score(ev[e]) < score(startV)) startV = ev[e]; } }
+    const E = eu.length, used = new Uint8Array(E), ptr = G.start.slice(0, nV), stack = new Int32Array(E + 2), trail = [];
+    let sp = 0; stack[sp++] = startV;
+    while (sp) {
+      const v = stack[sp - 1];
+      while (ptr[v] < G.start[v + 1] && used[G.eid[ptr[v]]]) ptr[v]++;
+      if (ptr[v] < G.start[v + 1]) { used[G.eid[ptr[v]]] = 1; stack[sp++] = G.to[ptr[v]]; ptr[v]++; }
+      else { trail.push(v); sp--; }
+    }
+    trail.reverse();
+    if (trail.length < 2) return null;
+
+    // pixel steps -> smooth-ish polyline: simplify each stretch between turn-backs and connector ends
+    const P = trail.map(v => [px(v), py(v)]);
+    const tol = 0.3 + simp * 0.05, m = 2 + Math.round(simp * 0.8), cuts = [0];
+    for (let i = 1; i < P.length - 1; i++) {
+      const back = trail[i - 1] === trail[i + 1];
+      const jump = Math.abs(P[i][0] - P[i - 1][0]) > 1 || Math.abs(P[i][1] - P[i - 1][1]) > 1 || Math.abs(P[i][0] - P[i + 1][0]) > 1 || Math.abs(P[i][1] - P[i + 1][1]) > 1;
+      if (back || jump) cuts.push(i);
+    }
+    cuts.push(P.length - 1);
+    const S = [];
+    for (let k = 0; k + 1 < cuts.length; k++) {
+      const a = cuts[k], b = cuts[k + 1], len = b - a + 1, sm = new Array(len);
+      // running average takes out the pixel stair-steps; the window shrinks to nothing at both ends so they stay put
+      const cx = new Float64Array(len + 1), cy = new Float64Array(len + 1);
+      for (let i = 0; i < len; i++) { cx[i + 1] = cx[i] + P[a + i][0]; cy[i + 1] = cy[i] + P[a + i][1]; }
+      for (let i = 0; i < len; i++) {
+        const kk = Math.min(m, i, len - 1 - i), cnt = 2 * kk + 1;
+        sm[i] = [(cx[i + kk + 1] - cx[i - kk]) / cnt, (cy[i + kk + 1] - cy[i - kk]) / cnt];
+      }
+      const part = simplify(sm, tol);
+      for (let i = (k ? 1 : 0); i < part.length; i++) S.push(part[i]);
+    }
+    let minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
+    for (const q of S) { if (q[0] < minx) minx = q[0]; if (q[0] > maxx) maxx = q[0]; if (q[1] < miny) miny = q[1]; if (q[1] > maxy) maxy = q[1]; }
+    const sc = Wmm / Math.max(1, maxx - minx);
+    const pts = S.map(q => [(q[0] - minx) * sc, (maxy - q[1]) * sc]);
+    if (bridges) notes.push('This picture has ' + (bridges + 1) + ' separate parts, so ' + bridges + ' connector line' + (bridges > 1 ? 's are' : ' is') + ' drawn between them (the pen cannot lift). ' + (center ? 'Raise Simplify or crop for fewer.' : 'Raise Simplify or tick Silhouette only for fewer.'));
+    return { pts, W: Wmm, H: (maxy - miny) * sc, notes };
+  }
+
+  // Outline for the pen-lift machine: the graph of pixel steps becomes separate strokes, without connector
+  // lines. Each connected part is drawn in one go where that is possible. Where lines branch or end, a short
+  // stretch is drawn twice (as on the one-line machine); if that stretch would be long, the pen is lifted instead.
+  function liftStrokes(Wmm, simp, GW, nV, eu, ev, comp, compVerts, order, queue, notes) {
+    const px = v => v % GW, py = v => (v - v % GW) / GW;
+    const score = v => px(v) - py(v);                 // small = towards the bottom-left of the picture
+    let G = csr(nV, eu, ev);
+    const virt = [];                                  // virt[e] = 1: edge e is not a line, the pen is lifted there
+    // rough scale, to judge a length in mm before the final size is known
+    let xa = Infinity, xb = -Infinity;
+    for (let e = 0; e < eu.length; e++) { const a = px(eu[e]), b = px(ev[e]); if (a < xa) xa = a; if (a > xb) xb = a; if (b < xa) xa = b; if (b > xb) xb = b; }
+    const maxBack = RETRACE_MM / (Wmm / Math.max(1, xb - xa));        // in pixel steps
+    const isOdd = new Uint8Array(nV), left = new Int32Array(compVerts.length), odd = [];
+    for (const id of order) for (const v of compVerts[id]) if ((G.start[v + 1] - G.start[v]) & 1) { odd.push(v); isOdd[v] = 1; left[id]++; }
+    if (odd.length) {
+      // a part can be drawn in one go when at most two of its points have an odd number of lines; pair up the others
+      const stamp = new Int32Array(nV), par = new Int32Array(nV); let epoch = 0;
+      const nearest = u => {                          // the way along the lines from u to the closest other odd point
+        epoch++; let qh = 0, qt = 0; queue[qt++] = u; stamp[u] = epoch; par[u] = -1;
+        while (qh < qt) {
+          const v = queue[qh++];
+          if (v !== u && isOdd[v]) { const way = [v]; let t = v; while (par[t] >= 0) { t = par[t]; way.push(t); } return way; }
+          for (let i = G.start[v]; i < G.start[v + 1]; i++) { const t = G.to[i]; if (stamp[t] !== epoch) { stamp[t] = epoch; par[t] = v; queue[qt++] = t; } }
+        }
+        return null;
+      };
+      const cand = [];
+      for (const u of odd) if (left[comp[u]] > 2) { const way = nearest(u); if (way) cand.push([way.length - 1, u]); }
+      cand.sort((a, b) => a[0] - b[0]);
+      for (const [, u] of cand) {
+        if (!isOdd[u] || left[comp[u]] <= 2) continue;
+        const way = nearest(u); if (!way) continue;
+        if (way.length - 1 <= maxBack) for (let i = 0; i + 1 < way.length; i++) { eu.push(way[i]); ev.push(way[i + 1]); }   // short: draw it twice
+        else { virt[eu.length] = 1; eu.push(u); ev.push(way[0]); }                                                          // long: lift the pen
+        isOdd[u] = 0; isOdd[way[0]] = 0; left[comp[u]] -= 2;
+      }
+      G = csr(nV, eu, ev);
+    }
+
+    // one walk through every edge of each part (Hierholzer), cut where the pen is lifted
+    const E = eu.length, used = new Uint8Array(E), ptr = G.start.slice(0, nV), stV = new Int32Array(E + 2), stE = new Int32Array(E + 2), trails = [];
+    for (const id of order) {
+      let s = -1;                                     // start at a loose end if there is one, else at the bottom-left of the part
+      for (const v of compVerts[id]) if (isOdd[v] && (s < 0 || score(v) < score(s))) s = v;
+      if (s < 0) for (const v of compVerts[id]) if (s < 0 || score(v) < score(s)) s = v;
+      if (s < 0) continue;
+      const tv = [], te = []; let sp = 0;
+      stV[sp] = s; stE[sp] = -1; sp++;
+      while (sp) {
+        const v = stV[sp - 1];
+        while (ptr[v] < G.start[v + 1] && used[G.eid[ptr[v]]]) ptr[v]++;
+        if (ptr[v] < G.start[v + 1]) { const e = G.eid[ptr[v]]; used[e] = 1; stV[sp] = G.to[ptr[v]]; stE[sp] = e; sp++; ptr[v]++; }
+        else { tv.push(v); te.push(stE[sp - 1]); sp--; }
+      }
+      tv.reverse(); te.reverse();                     // te[i] = the edge that leads from tv[i - 1] to tv[i]
+      let cur = [tv[0]];
+      for (let i = 1; i < tv.length; i++) {
+        if (virt[te[i]]) { if (cur.length > 1) trails.push(cur); cur = [tv[i]]; } else cur.push(tv[i]);
+      }
+      if (cur.length > 1) trails.push(cur);
+    }
+    if (!trails.length) return null;
+
+    // pixel steps -> smooth-ish polylines (same recipe as for the one-line machine): simplify each stretch between turn-backs
+    const tol = 0.3 + simp * 0.05, m = 2 + Math.round(simp * 0.8), list = [];
+    for (const trail of trails) {
+      const P = trail.map(v => [px(v), py(v)]), cuts = [0];
+      for (let i = 1; i < P.length - 1; i++) if (trail[i - 1] === trail[i + 1]) cuts.push(i);
+      cuts.push(P.length - 1);
+      const S = [];
+      for (let k = 0; k + 1 < cuts.length; k++) {
+        const a = cuts[k], b = cuts[k + 1], len = b - a + 1, sm = new Array(len);
+        const cx = new Float64Array(len + 1), cy = new Float64Array(len + 1);
+        for (let i = 0; i < len; i++) { cx[i + 1] = cx[i] + P[a + i][0]; cy[i + 1] = cy[i] + P[a + i][1]; }
+        for (let i = 0; i < len; i++) {
+          const kk = Math.min(m, i, len - 1 - i), cnt = 2 * kk + 1;
+          sm[i] = [(cx[i + kk + 1] - cx[i - kk]) / cnt, (cy[i + kk + 1] - cy[i - kk]) / cnt];
+        }
+        const part = simplify(sm, tol);
+        for (let i = (k ? 1 : 0); i < part.length; i++) S.push(part[i]);
+      }
+      list.push(S);
+    }
+    // scale to the wanted width; strokes that would be shorter than a dot of ink are left out
+    const box = L => { let minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity; for (const S of L) for (const q of S) { if (q[0] < minx) minx = q[0]; if (q[0] > maxx) maxx = q[0]; if (q[1] < miny) miny = q[1]; if (q[1] > maxy) maxy = q[1]; } return { minx, maxx, miny, maxy }; };
+    let b = box(list), sc = Wmm / Math.max(1, b.maxx - b.minx);
+    const keep = list.filter(S => S.length > 1 && pathLength(S) * sc >= MIN_STROKE);
+    if (!keep.length) return null;
+    if (keep.length < list.length) { b = box(keep); sc = Wmm / Math.max(1, b.maxx - b.minx); }
+    if (window.__dbg) window.__dbg({ trails, virtual: virt.filter(Boolean).length, odd: odd.length, parts: order.length, edges: E, GW, box: b, sc, w: gw, h: gh });   // for the tests only
+    return { strokes: keep.map(S => S.map(q => [(q[0] - b.minx) * sc, (b.maxy - q[1]) * sc])), W: Wmm, H: (b.maxy - b.miny) * sc, notes };
+  }
+
+  // ---------- G-code ----------
+  function toGcode(pts, title, W, H, feed, len, sx, sy) {
+    sx = sx || 0; sy = sy || 0;
+    const f2 = v => (Math.round(v * 100) / 100).toFixed(2);
+    const L = [];
+    L.push('; ' + title);
+    L.push('; Size ' + W.toFixed(1) + ' x ' + H.toFixed(1) + ' mm, line length ' + (len / 1000).toFixed(1) + ' m, feed ' + feed + ' mm/min');
+    if (sx < 0.5 && sy < 0.5) L.push('; Start: pen on the paper at the bottom-left corner of the drawing, X and Y zeroed there.');
+    else L.push('; Start: pen on the paper where the line starts, ' + sx.toFixed(0) + ' mm from the left edge and ' + sy.toFixed(0) + ' mm from the bottom edge of the drawing. Zero X and Y there.');
+    L.push('; Room needed from the start point: ' + sx.toFixed(0) + ' mm left, ' + (W - sx).toFixed(0) + ' mm right, ' + sy.toFixed(0) + ' mm towards you, ' + (H - sy).toFixed(0) + ' mm away from you.');
+    L.push('; The pen never lifts: the whole drawing is one continuous line.');
+    L.push('G21 ; millimetres');
+    L.push('G90 ; absolute coordinates');
+    L.push('G1 F' + feed);
+    let last = '';
+    for (const p of pts) {
+      const s = 'G1 X' + f2(p[0]) + ' Y' + f2(p[1]);
+      if (s !== last) L.push(s);
+      last = s;
+    }
+    L.push('M2 ; end (the pen stays where it stopped)');
+    return L.join('\n') + '\n';
+  }
+  function pathLength(pts) { let s = 0; for (let i = 1; i < pts.length; i++) s += Math.hypot(pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1]); return s; }
+
+  // ---------- pen-lift machine: stroke order, G-code, time ----------
+  const isLoop = s => s.length > 3 && Math.abs(s[0][0] - s[s.length - 1][0]) < 1e-6 && Math.abs(s[0][1] - s[s.length - 1][1]) < 1e-6;
+  // Order the strokes so that the pen travels little while it is up: start with the stroke nearest (hx, hy), the
+  // home corner, then always go on with the stroke that has the closest end. An open stroke may be drawn
+  // backwards; a closed one (a loop) may start at any of its points.
+  function orderStrokes(list, hx, hy) {
+    const n = list.length, loop = list.map(isLoop), used = new Uint8Array(n), out = [];
+    let cx = hx, cy = hy;
+    for (let k = 0; k < n; k++) {
+      let best = -1, bd = Infinity, bj = 0;
+      for (let i = 0; i < n; i++) {
+        if (used[i]) continue;
+        const s = list[i];
+        if (loop[i]) {
+          for (let j = 0; j < s.length - 1; j++) { const d = (s[j][0] - cx) ** 2 + (s[j][1] - cy) ** 2; if (d < bd) { bd = d; best = i; bj = j; } }
+        } else {
+          const e = s[s.length - 1];
+          let d = (s[0][0] - cx) ** 2 + (s[0][1] - cy) ** 2; if (d < bd) { bd = d; best = i; bj = 0; }
+          d = (e[0] - cx) ** 2 + (e[1] - cy) ** 2; if (d < bd) { bd = d; best = i; bj = 1; }
+        }
+      }
+      used[best] = 1;
+      let s = list[best];
+      if (loop[best]) { if (bj) s = s.slice(bj, s.length - 1).concat(s.slice(0, bj + 1)); }
+      else if (bj) s = s.slice().reverse();
+      out.push(s); cx = s[s.length - 1][0]; cy = s[s.length - 1][1];
+    }
+    return out;
+  }
+  const fmtN = v => String(Math.round(v * 1000) / 1000);        // 70, 0.2, 12.5: no trailing zeros
+  // A comment line. GRBL acts on ? ! ~ and on bytes above 127 even inside a comment, so they must never get into one.
+  const gComment = t => '(' + String(t).replace(/[^\x20-\x7E]/g, '_').replace(/[()?!~;]/g, '_').slice(0, 68) + ')';
+  // G-code for the pen-lift machine. list = the strokes in drawing order, in mm from the home corner.
+  // One command per line: pen up (M5) and pen down (M3 S..) are each followed by a pause (G4), travel is G0, drawing is G1.
+  function penGcode(list, head, feed, P) {
+    const f2 = v => (Math.round(Math.max(0, v) * 100) / 100).toFixed(2);
+    const L = head.map(gComment);
+    L.push('G21 G90 G54');             // millimetres, absolute positions, work coordinate system 1
+    L.push('G92.1');                   // no temporary offset
+    L.push('G10 L2 P1 X0 Y0');         // zero of the work coordinates = the home corner
+    const dwell = 'G4 P' + fmtN(P.pause), penUp = () => { L.push('M5'); L.push(dwell); };
+    penUp();
+    for (const s of list) {
+      let last = 'X' + f2(s[0][0]) + ' Y' + f2(s[0][1]), first = true;
+      L.push('G0 ' + last);
+      L.push('M3 S' + fmtN(P.down)); L.push(dwell);
+      for (let i = 1; i < s.length; i++) {
+        const c = 'X' + f2(s[i][0]) + ' Y' + f2(s[i][1]);
+        if (c === last) continue;
+        L.push('G1 ' + c + (first ? ' F' + feed : '')); first = false; last = c;
+      }
+      penUp();
+    }
+    L.push('G0 X0 Y0');
+    L.push('M2');
+    return L.join('\n') + '\n';
+  }
+  // minutes for a pen-lift drawing: drawing, travel with the pen up (from home, between strokes, back home) and pen pauses
+  function penTime(list, feed, P, slow) {
+    const vmax = RAPID / 60, v = feed / 60;
+    const travel = d => d <= 0 ? 0 : (d < vmax * vmax / ACCEL ? 2 * Math.sqrt(d / ACCEL) : d / vmax + vmax / ACCEL);
+    let t = P.pause, cx = 0, cy = 0;
+    for (const s of list) {
+      const e = s[s.length - 1];
+      t += travel(Math.hypot(s[0][0] - cx, s[0][1] - cy)) + 2 * P.pause + pathLength(s) / v * slow + v / ACCEL;
+      cx = e[0]; cy = e[1];
+    }
+    return (t + travel(Math.hypot(cx, cy))) / 60;
+  }
+  // the test square of the pen-lift machine: the square, then a short tick inside its first corner (so the pen lift is tested too)
+  function penSquare(feed, P) {
+    const x = P.mx, y = P.my;
+    return penGcode([[[x, y], [x + 100, y], [x + 100, y + 100], [x, y + 100], [x, y]], [[x + 10, y + 10], [x + 25, y + 25]]],
+      ['Test square 100 x 100 mm, pen lift + homing', 'Size 100.0 x 100.0 mm, lower-left corner X' + fmtN(x) + ' Y' + fmtN(y) + ' from home',
+        '2 strokes: the square, right first then away, and a short tick', 'Home the machine first: $H'], feed, P);
+  }
+  // null when the test square fits in the machine area, else what to do about it
+  function squareMisfit(P) {
+    return (P.mx + 100 > P.ax + 1e-6 || P.my + 100 > P.ay + 1e-6)
+      ? 'The 100 mm test square does not fit there: set From home (under Size and position) to at most X ' + Math.max(0, Math.floor(P.ax - 100)) + ' and Y ' + Math.max(0, Math.floor(P.ay - 100)) + '.' : null;
+  }
+  const penFeed = () => Math.min(RAPID, Math.max(50, Math.round(num('feed') || 2400)));
+
+  // ---------- build + preview ----------
+  function showWarn(bad, warn) { $('warn').textContent = bad.concat(warn).join(' '); $('warn').classList.toggle('bad', bad.length > 0); }
+  function buildPen() {
+    const P = penSet(), W = Math.max(10, num('width') || 120), feed = penFeed();
+    const warn = [], bad = [];
+    if (num('feed') > RAPID) warn.push('The top speed of the machine is ' + RAPID + ' mm/min, so that is used.');
+    if (!gray) { strokes = null; window.__strokes = null; drawEmpty(); showWarn(bad, warn); return; }
+    const nothing = text => {
+      strokes = null; window.__strokes = null; gcode = ''; fits = true;
+      drawEmpty(text); $('dl').disabled = $('copy').disabled = true; sUI(); showWarn(bad, warn);
+      ['sSize', 'sLen', 'sStrokes', 'sTime', 'sLines'].forEach(id => $(id).textContent = '–');
+    };
+    let list, H;
+    if (style === 'outline') {
+      const r = buildOutline(W, true);
+      if (!r) { nothing('Nothing to draw yet: move the Dark / light cut-off slider, or tick Invert.'); return; }
+      list = r.strokes; H = r.H; warn.push(...r.notes);
+    } else {
+      H = W * gh / gw;
+      const dark = makeDark(W, H);
+      list = [style === 'rows' ? buildRows(W, H, dark) : buildTSP(W, H, dark)];
+    }
+    list = list.filter(s => s.length > 1 && pathLength(s) >= MIN_STROKE);
+    if (!list.length) { nothing('Nothing to draw yet: the picture is blank at these settings. Change Brightness, or tick Invert.'); return; }
+    // place the drawing: its lower-left corner sits (mx, my) from the home corner; then put the strokes in a good order
+    list = orderStrokes(list, -P.mx, -P.my).map(s => s.map(q => [q[0] + P.mx, q[1] + P.my]));
+    strokes = list; window.__strokes = list; path = [];
+    const wMax = P.ax - P.mx, hMax = P.ay - P.my, wide = W > wMax + 1e-6, tall = H > hMax + 1e-6, lim = v => Math.max(0, Math.floor(v + 1e-6));
+    if (wide && tall) bad.push('Too big for the machine: ' + Math.ceil(W) + ' × ' + Math.ceil(H) + ' mm, the limit is ' + lim(wMax) + ' × ' + lim(hMax) + ' mm. Make it narrower.');
+    else if (wide) bad.push('Too wide for the machine: ' + Math.ceil(W) + ' mm, the limit is ' + lim(wMax) + ' mm. Make it narrower.');
+    else if (tall) bad.push('Too tall for the machine: ' + Math.ceil(H) + ' mm, the limit is ' + lim(hMax) + ' mm. Make it narrower' + (hMax > 5 ? ' (' + lim(W * hMax / H) + ' mm wide fits)' : '') + ' or crop the picture.');
+    fits = !bad.length;
+    let len = 0; for (const s of list) len += pathLength(s);
+    const mins = penTime(list, feed, P, style === 'outline' ? 1.1 : 1.3);     // extra: GRBL slows down in tight wiggles and corners
+    const names = { outline: 'outline', rows: 'squiggle rows', tsp: 'scribble' }, n = list.length;
+    gcode = !fits ? '' : penGcode(list, ['Drawing machine G-code: ' + imgName.slice(0, 18) + ', ' + names[style] + ', pen lift',
+      'Size ' + W.toFixed(1) + ' x ' + H.toFixed(1) + ' mm, lower-left corner X' + fmtN(P.mx) + ' Y' + fmtN(P.my) + ' from home',
+      n + ' stroke' + (n > 1 ? 's' : '') + ', pen line ' + (len / 1000).toFixed(1) + ' m, feed ' + feed + ' mm/min', 'Home the machine first: $H'], feed, P);
+    $('sSize').textContent = W.toFixed(0) + ' × ' + H.toFixed(0) + ' mm';
+    $('sLen').textContent = len < 1000 ? len.toFixed(0) + ' mm' : (len / 1000).toFixed(1) + ' m';
+    $('sStrokes').textContent = String(n);
+    $('sTime').textContent = mins < 1 ? '< 1 min' : Math.round(mins) + ' min';
+    $('sLines').textContent = fits ? (gcode.split('\n').length - 1).toLocaleString() : '–';
+    if (n > 150) warn.push('The pen lifts ' + n + ' times for this picture: raise Simplify' + (style === 'outline' && trace === 'edge' ? ' or tick Silhouette only' : '') + ' for fewer strokes.');
+    if (mins > 25) warn.push('This will take a long time: use fewer rows/dots or a smaller width.');
+    showWarn(bad, warn);
+    $('dl').disabled = $('copy').disabled = !fits;
+    sUI();
+    drawPen(list, W, H, P);
+  }
+  function build() {
+    if (machine === 'pen') { buildPen(); return; }
+    strokes = null; window.__strokes = null; fits = true; $('warn').classList.remove('bad');
+    const W = Math.max(10, num('width') || 120);
+    const feed = Math.max(50, Math.round(num('feed') || 1500));
+    const warn = [];
+    if (W > 220) warn.push('Wider than about 220 mm will run off this machine.');
+    if (feed > 3000) warn.push('Above 3000 mm/min the motors may skip steps.');
+    if (!gray) { drawEmpty(); $('warn').textContent = warn.join(' '); return; }
+    let pts, H;
+    if (style === 'outline') {
+      const r = buildOutline(W);
+      if (!r) {
+        drawEmpty('Nothing to draw yet: move the Dark / light cut-off slider, or tick Invert.');
+        gcode = ''; $('dl').disabled = $('copy').disabled = true; sUI(); $('warn').textContent = warn.join(' ');
+        ['sSize', 'sLen', 'sTime', 'sLines', 'sStart'].forEach(id => $(id).textContent = '–');
+        return;
+      }
+      pts = r.pts; H = r.H; warn.push(...r.notes);
+    } else {
+      H = W * gh / gw;
+      const dark = makeDark(W, H);
+      pts = style === 'rows' ? buildRows(W, H, dark) : buildTSP(W, H, dark);
+    }
+    if (H > 240) warn.push('Taller than about 240 mm will run off this machine: reduce the width.');
+    path = pts;
+    const sx = pts[0][0], sy = pts[0][1];
+    const gpts = pts.map(q => [q[0] - sx, q[1] - sy]);      // G-code zero = where the line starts
+    const len = pathLength(pts);
+    const mins = len / feed * (style === 'outline' ? 1.1 : 1.3);   // extra: GRBL slows down in tight wiggles and corners
+    const names = { outline: 'outline', rows: 'squiggle rows', tsp: 'scribble' };
+    gcode = toGcode(gpts, 'Image to Drawing Machine G-code: "' + imgName + '", style ' + names[style], W, H, feed, len, sx, sy);
+    $('sSize').textContent = W.toFixed(0) + ' × ' + H.toFixed(0) + ' mm';
+    $('sLen').textContent = len < 1000 ? len.toFixed(0) + ' mm' : (len / 1000).toFixed(1) + ' m';
+    $('sTime').textContent = mins < 1 ? '< 1 min' : Math.round(mins) + ' min';
+    $('sLines').textContent = gcode.split('\n').length.toLocaleString();
+    $('sStart').textContent = (sx < 0.5 && sy < 0.5) ? 'bottom-left corner' : sx.toFixed(0) + ' mm from left, ' + sy.toFixed(0) + ' mm from bottom';
+    if (mins > 25) warn.push('This will take a long time: use fewer rows/dots or a smaller width.');
+    $('warn').textContent = warn.join(' ');
+    $('dl').disabled = $('copy').disabled = false;
+    sUI();
+    drawPath(pts, W, H);
+  }
+
+  function drawEmpty(text) {
+    vctx.fillStyle = '#fff'; vctx.fillRect(0, 0, view.width, view.height);
+    vctx.fillStyle = '#9aa3b2'; vctx.font = '22px sans-serif'; vctx.textAlign = 'center';
+    vctx.fillText(text || 'Your drawing preview appears here', view.width / 2, view.height / 2);
+  }
+
+  function drawPath(pts, W, H) {
+    const pad = 46, cw = view.width, ch = view.height;
+    const k = Math.min((cw - 2 * pad) / W, (ch - 2 * pad) / H);
+    const ox = (cw - W * k) / 2, oy = (ch + H * k) / 2;
+    const X = x => ox + x * k, Y = y => oy - y * k;
+    vctx.fillStyle = '#fff'; vctx.fillRect(0, 0, cw, ch);
+    vctx.strokeStyle = '#e3e6ec'; vctx.lineWidth = 1; vctx.setLineDash([6, 5]);
+    vctx.strokeRect(X(0), Y(H), W * k, H * k); vctx.setLineDash([]);
+    vctx.strokeStyle = '#1d2433'; vctx.lineWidth = style === 'outline' ? Math.max(1.2, Math.min(3, 0.5 * k)) : Math.max(0.6, Math.min(1.6, 0.5 * k)); vctx.lineJoin = 'round'; vctx.lineCap = 'round';
+    vctx.beginPath(); vctx.moveTo(X(pts[0][0]), Y(pts[0][1]));
+    for (let i = 1; i < pts.length; i++) vctx.lineTo(X(pts[i][0]), Y(pts[i][1]));
+    vctx.stroke();
+    // axes + start marker
+    vctx.strokeStyle = '#2a6df4'; vctx.fillStyle = '#2a6df4'; vctx.lineWidth = 2; vctx.font = '14px sans-serif'; vctx.textAlign = 'left';
+    arrow(X(0), Y(0) + 22, X(0) + 60, Y(0) + 22); vctx.fillText('+X', X(0) + 66, Y(0) + 27);
+    arrow(X(0) - 22, Y(0), X(0) - 22, Y(0) - 60); vctx.fillText('+Y', X(0) - 32, Y(0) - 68);
+    const s0 = pts[0], right = X(s0[0]) > cw - 150;
+    vctx.fillStyle = '#1f9d55'; vctx.beginPath(); vctx.arc(X(s0[0]), Y(s0[1]), 7, 0, 2 * Math.PI); vctx.fill();
+    vctx.textAlign = right ? 'right' : 'left';
+    vctx.fillText('start here (X0 Y0)', X(s0[0]) + (right ? -11 : 11), Y(s0[1]) - 11); vctx.textAlign = 'left';
+    vctx.fillStyle = '#c0392b'; vctx.beginPath(); const e = pts[pts.length - 1]; vctx.arc(X(e[0]), Y(e[1]), 5, 0, 2 * Math.PI); vctx.fill();
+  }
+  // preview for the pen-lift machine: the machine area with the home corner, the drawing where it will be drawn,
+  // pen-down strokes solid, pen-up moves thin and dashed
+  function drawPen(list, W, H, P) {
+    const cw = view.width, ch = view.height, close = zoom === 'drawing';
+    const padL = 62, padR = 30, padT = 30, padB = 66;
+    let x0 = 0, y0 = 0, x1 = Math.min(Math.max(P.ax, P.mx + W), 2.5 * P.ax), y1 = Math.min(Math.max(P.ay, P.my + H), 2.5 * P.ay);
+    if (close) { const m = Math.max(3, 0.03 * Math.max(W, H)); x0 = P.mx - m; y0 = P.my - m; x1 = P.mx + W + m; y1 = P.my + H + m; }
+    const k = Math.min((cw - padL - padR) / (x1 - x0), (ch - padT - padB) / (y1 - y0));
+    const ox = padL + (cw - padL - padR - (x1 - x0) * k) / 2 - x0 * k, oy = ch - padB - (ch - padT - padB - (y1 - y0) * k) / 2 + y0 * k;
+    const X = x => ox + x * k, Y = y => oy - y * k;
+    vctx.setLineDash([]); vctx.fillStyle = '#fff'; vctx.fillRect(0, 0, cw, ch);
+    // the area the pen can reach
+    vctx.strokeStyle = '#9aa3b2'; vctx.lineWidth = 1.5;
+    vctx.strokeRect(X(0), Y(P.ay), P.ax * k, P.ay * k);
+    // the box of the drawing (red when it sticks out of the machine area)
+    vctx.strokeStyle = fits ? '#dfe3ea' : '#d93025'; vctx.lineWidth = fits ? 1 : 2; vctx.setLineDash([6, 5]);
+    vctx.strokeRect(X(P.mx), Y(P.my + H), W * k, H * k);
+    // moves with the pen up: from home to the first stroke, between strokes, back home
+    vctx.strokeStyle = '#8fb0f2'; vctx.lineWidth = 1; vctx.setLineDash([5, 5]);
+    vctx.beginPath();
+    let cx = 0, cy = 0;
+    for (const s of list) { const e = s[s.length - 1]; vctx.moveTo(X(cx), Y(cy)); vctx.lineTo(X(s[0][0]), Y(s[0][1])); cx = e[0]; cy = e[1]; }
+    vctx.moveTo(X(cx), Y(cy)); vctx.lineTo(X(0), Y(0));
+    vctx.stroke(); vctx.setLineDash([]);
+    // strokes with the pen down
+    vctx.strokeStyle = '#1d2433'; vctx.lineWidth = style === 'outline' ? Math.max(1.2, Math.min(3, 0.5 * k)) : Math.max(0.6, Math.min(1.6, 0.5 * k)); vctx.lineJoin = 'round'; vctx.lineCap = 'round';
+    vctx.beginPath();
+    for (const s of list) { vctx.moveTo(X(s[0][0]), Y(s[0][1])); for (let i = 1; i < s.length; i++) vctx.lineTo(X(s[i][0]), Y(s[i][1])); }
+    vctx.stroke();
+    // home corner and axes
+    vctx.strokeStyle = '#2a6df4'; vctx.fillStyle = '#2a6df4'; vctx.lineWidth = 2; vctx.font = '14px sans-serif'; vctx.textAlign = 'left';
+    if (!close) {
+      vctx.beginPath(); vctx.arc(X(0), Y(0), 6, 0, 2 * Math.PI); vctx.fill();
+      arrow(X(0) + 16, Y(0) + 20, X(0) + 76, Y(0) + 20); vctx.fillText('+X', X(0) + 82, Y(0) + 25);
+      arrow(X(0) - 20, Y(0) - 16, X(0) - 20, Y(0) - 76); vctx.fillText('+Y', X(0) - 30, Y(0) - 84);
+      vctx.font = 'bold 14px sans-serif'; vctx.fillText('home, X0 Y0', X(0) - 8, Y(0) + 46);
+      vctx.font = '13px sans-serif'; vctx.fillStyle = '#7b8494'; vctx.textAlign = 'right';
+      vctx.fillText('machine area ' + fmtN(P.ax) + ' × ' + fmtN(P.ay) + ' mm', X(P.ax), Y(P.ay) - 8);
+    } else {
+      vctx.font = '13px sans-serif'; vctx.fillStyle = '#7b8494';
+      vctx.fillText('Close-up. The lower-left corner of the dashed box is ' + fmtN(P.mx) + ' mm in X and ' + fmtN(P.my) + ' mm in Y from home.', 14, ch - 14);
+    }
+    vctx.textAlign = 'left';
+  }
+  function arrow(x1, y1, x2, y2) {
+    vctx.beginPath(); vctx.moveTo(x1, y1); vctx.lineTo(x2, y2); vctx.stroke();
+    const a = Math.atan2(y2 - y1, x2 - x1);
+    vctx.beginPath(); vctx.moveTo(x2, y2);
+    vctx.lineTo(x2 - 9 * Math.cos(a - 0.4), y2 - 9 * Math.sin(a - 0.4));
+    vctx.lineTo(x2 - 9 * Math.cos(a + 0.4), y2 - 9 * Math.sin(a + 0.4)); vctx.closePath(); vctx.fill();
+  }
+
+  // ---------- saving ----------
+  // Inside the claude.ai viewer, files go through its downloads capability (which allows .txt but
+  // not .gcode). Opened as a normal web page, a plain .gcode download is used.
+  let dlApi;
+  async function getDl() {
+    if (dlApi !== undefined) return dlApi;
+    dlApi = null;
+    try { if (window.claude && typeof window.claude.use === 'function') dlApi = await window.claude.use('downloads'); } catch (e) {}
+    return dlApi;
+  }
+  async function save(filename, text) {
+    const msg = $('msg'); msg.textContent = '';
+    const api = await getDl();
+    if (api) {
+      const txtName = filename.replace(/\.gcode$/, '') + '_gcode.txt';
+      try {
+        await api.save({ filename: txtName, data: text });
+        msg.textContent = 'Saved ' + txtName + '. Universal G-code Sender opens it as is (if it is not listed, choose "All files" or rename it to .gcode).';
+      } catch (e) {
+        msg.textContent = (e && e.code === 'declined') ? 'Download cancelled.' : 'The download did not work here. Use Copy G-code and paste it into a text file named ' + filename + '.';
+      }
+      return;
+    }
+    try {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+      a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      msg.textContent = 'Downloaded ' + filename + '.';
+    } catch (e) { msg.textContent = 'The download was blocked. Use Copy G-code and paste it into a text file named ' + filename + '.'; }
+  }
+  async function copy(text, what) {
+    try { await navigator.clipboard.writeText(text); $('msg').textContent = what + ' copied to the clipboard.'; }
+    catch (e) { $('msg').textContent = 'Copy was blocked by the browser.'; }
+  }
+  $('dl').addEventListener('click', () => gcode && save(imgName + '_' + style + (machine === 'pen' ? '_pen' : '') + '.gcode', gcode));
+  $('copy').addEventListener('click', () => gcode && copy(gcode, 'G-code'));
+  $('copyGrbl').addEventListener('click', () => copy($('grbl').textContent, 'GRBL settings'));
+  $('square').addEventListener('click', () => {
+    if (machine === 'pen') {
+      const P = penSet(), no = squareMisfit(P);
+      if (no) { $('msg').textContent = no; return; }
+      save('square_test_pen.gcode', penSquare(penFeed(), P)); return;
+    }
+    const feed = Math.max(50, Math.round(num('feed') || 1500));
+    const sq = [[0,0],[100,0],[100,100],[0,100],[0,0],[10,10]];
+    save('test_square_100mm.gcode', toGcode(sq, 'Test square: 100 x 100 mm. It should go RIGHT first, then AWAY from you. Measure the sides: they must be 100 mm.', 100, 100, feed, 410));
+  });
+
+
+  // ---------- send to the machine over USB (Web Serial: Chrome / Edge) ----------
+  const S = { port: null, writer: null, reader: null, on: false, state: '', sub: '', pending: [], job: null, wco: [0, 0], poll: null, settings: {}, buf: '', zeroed: false, held: false, bw: [],
+    // pen-lift machine
+    penFw: false,                  // the class firmware (grbl_pen) said hello
+    homed: false,                  // a homing cycle ended well and nothing has reset the machine since: it knows where it is
+    homing: false,                 // $H is running (GRBL answers nothing until it ends)
+    stopHome: false,               // Stop was pressed while Home was working
+    busy: '',                      // an action of several steps is running ('home', 'stop', 'reset'): the other buttons wait
+    crit: false,                   // after a limit alarm GRBL listens to nothing but a reset
+    pn: '', statAt: 0, statN: 0,   // pins that read "pressed" in the last status report; when it came; how many have come
+    alarm: '', alarmN: 0,          // code of the last ALARM line; how many have come
+    rst: 0 };                      // when GRBL began to restart (a reset was sent, or an alarm after which it restarts itself); 0 once its welcome line is in
+  const enc = new TextEncoder();
+  const GERR = { 1: 'letter missing', 2: 'bad number', 3: 'unknown $ command', 5: 'homing is switched off', 8: 'not idle', 9: 'locked: click Unlock', 15: 'jog would exceed travel', 20: 'unsupported command', 22: 'feed rate missing', 33: 'bad arc' };
+  const PERR = { 9: 'locked: press Home', 15: 'jog would leave the machine area' };       // pen-lift machine
+  const errText = l => { const n = l.slice(6), t = (machine === 'pen' && PERR[n]) || GERR[n]; return t ? ' (' + t + ')' : ''; };
+  const ALARMS = {
+    1: 'A limit switch was pressed while the machine was moving (hard limit).',
+    2: 'The move would leave the machine area: make the drawing smaller or closer to home.',
+    3: 'The machine was reset while it was moving, so it no longer knows where it is.',
+    6: 'Homing was interrupted by a reset.',
+    8: 'A limit switch reads pressed all the time: check its wires (terminal 1 to GND, terminal 2 to the pin).',
+    9: 'The machine did not reach a limit switch: an axis ran the wrong way, the motors have no 12V, or a switch lever is never pressed.' };
+  const alarmText = n => ALARMS[n] || 'The machine reported alarm ' + n + '.';
+  const NOTE_LINE = 'Plug the Arduino (with GRBL on it) into USB, then connect. Works in Chrome or Edge on a computer.';
+  const NOTE_PEN = 'Plug the Arduino (with the class firmware grbl_pen on it) into USB, switch on the 12V power, then connect. Works in Chrome or Edge on a computer.';
+  const MSG_HOME = 'Press Home first: the machine drives to its two limit switches to find its home corner.';
+  const MSG_LOCKED = 'The machine is locked: press Home first.';
+  function slog(t) { const el = $('sLog'); el.textContent = (el.textContent + t + '\n').split('\n').slice(-80).join('\n'); el.scrollTop = el.scrollHeight; }
+  function smsg(t, bad) { const el = $('sMsg'); el.textContent = t; el.style.color = bad ? '#b3261e' : ''; }
+  // what to do next when nothing is running
+  function idleMsg() {
+    if (machine !== 'pen') return S.zeroed ? 'Zero is set at the pen. Rest the pen on the paper and click Draw.' : 'Move the pen to the green dot\'s spot on your paper, click Set zero here, then Draw.';
+    return S.homed ? 'Homed. The pen tip is at X0 Y0. Tape the paper with one corner just outside the pen tip, put the pen in (Load pen), then click Draw.' : MSG_HOME;
+  }
+  function sUI() {
+    const on = S.on, job = !!S.job, alarm = S.state === 'Alarm', pen = machine === 'pen', act = job || !!S.busy || !!S.starting;
+    $('sControls').hidden = !on;
+    $('sConnect').textContent = on ? 'Disconnect' : 'Connect to machine';
+    const b = $('sBadge');
+    b.textContent = !on ? 'Not connected' : job ? (S.held ? 'Paused' : 'Drawing ' + Math.round(100 * S.job.done / Math.max(1, S.job.total)) + '%')
+      : !pen ? (S.state || 'Connected')
+      : S.homing ? 'Homing…' : alarm ? 'Locked' : S.state === 'Idle' ? (S.homed ? 'Ready' : 'Not homed') : (S.state || 'Connected');
+    b.className = 'badge' + (!on ? '' : alarm ? ' bad' : (job || S.homing) ? ' busy' : (pen && !S.homed) ? '' : ' ok');
+    ['jXm', 'jXp', 'jYm', 'jYp', 'sZero', 'sSettings', 'sFlipX', 'sFlipY', 'sSquare', 'sHome', 'sPenUp', 'sPenDown', 'sPenLoad', 'sReset'].forEach(id => $(id).disabled = !on || act);
+    $('sUnlock').disabled = !on || !!S.busy || !!S.starting;
+    $('sDraw').disabled = !on || act || !gcode || (pen ? !S.homed || alarm : !S.zeroed);
+    $('sPause').disabled = !job; $('sPause').textContent = S.held ? 'Resume' : 'Pause';
+    $('sStop').disabled = pen ? !on || S.busy === 'stop' : !job;
+    $('sProg').value = job ? S.job.done / Math.max(1, S.job.total) : 0;
+    [...$('machSeg').children].forEach(x => x.disabled = on && act);      // no change of machine while it is working
+    // where the pen is: measured from home on the pen-lift machine, from the zero set by hand on the one-line machine
+    if (on && pen && S.mp) $('sPos').textContent = 'X ' + S.mp[0].toFixed(1) + '  Y ' + S.mp[1].toFixed(1) + (S.homed ? ' mm from home' : ' mm (not homed)');
+    else if (on && !pen && S.wp) $('sPos').textContent = 'X ' + S.wp[0].toFixed(1) + '  Y ' + S.wp[1].toFixed(1) + ' mm';
+    swUI();
+  }
+  // the two limit switches, from the "Pn:" part of GRBL's status report (shown as unknown when no report came lately)
+  function swUI() {
+    const fresh = S.on && Date.now() - S.statAt < 1500;
+    for (const ax of ['X', 'Y']) {
+      const el = $('sw' + ax), hit = fresh && S.pn.includes(ax);
+      el.textContent = ax + ' switch: ' + (!fresh ? '–' : hit ? 'pressed' : 'free');
+      el.className = 'badge' + (!fresh ? '' : hit ? ' hit' : ' ok');
+    }
+    $('swA').hidden = !(fresh && /[RHSD]/.test(S.pn));
+  }
+  // show what belongs to the chosen machine
+  function sMode() {
+    const pen = machine === 'pen';
+    $('sHome').hidden = !pen; $('sZero').hidden = pen; $('penRow').hidden = !pen; $('swRow').hidden = !pen;
+    $('sSettings').hidden = pen; $('sReset').hidden = !pen;
+    if (S.on) connectNote(); else if ([NOTE_LINE, NOTE_PEN].includes($('sNote').textContent)) $('sNote').textContent = pen ? NOTE_PEN : NOTE_LINE;
+    if (!S.job && !S.busy) smsg(idleMsg());
+    sUI();
+  }
+  async function sRaw(str) { if (S.writer) await S.writer.write(enc.encode(str)); }
+  // send one line; resolves with GRBL's answer ('ok', 'error:N'), or with 'ALARM:N', 'reset', 'closed', or 'timeout' after ms
+  function sCmd(line, quiet, ms) {
+    return new Promise(res => {
+      if (!S.on) { res('closed'); return; }
+      const q = { line, res, at: Date.now() };
+      S.pending.push(q);
+      if (!quiet) slog('> ' + line);
+      if (ms) setTimeout(() => { const i = S.pending.indexOf(q); if (i >= 0) { S.pending.splice(i, 1); res('timeout'); } }, ms);
+      sRaw(line + '\n').catch(() => res('closed'));
+    });
+  }
+  function flushPending(why) { const ps = S.pending; S.pending = []; ps.forEach(q => q.res(why)); }
+  function onLine(l) {
+    if (!l) return;
+    const pen = machine === 'pen';
+    if (l[0] === '<') {
+      const f = l.replace(/[<>]/g, '').split('|'), st = f[0].split(':');
+      S.state = st[0]; S.sub = st[1] || '';
+      let mp = null, wp = null, pn = '';
+      for (const part of f) {
+        if (part.startsWith('MPos:')) mp = part.slice(5).split(',').map(Number);
+        if (part.startsWith('WPos:')) wp = part.slice(5).split(',').map(Number);
+        if (part.startsWith('WCO:')) S.wco = part.slice(4).split(',').map(Number);
+        if (part.startsWith('Pn:')) pn = part.slice(3);
+      }
+      S.pn = pn; S.statAt = Date.now(); S.statN++;
+      // After a serial glitch an "ok" may be lost, and its command would wait for ever. GRBL answers a line before it runs it
+      // (a pause is at most 2 s), so a command still waiting after 2.5 s while the machine is Idle was done: let it go on.
+      if (S.glitchAt && (S.state === 'Idle' || S.state === 'Alarm')) {
+        const now = Date.now();
+        while (S.pending.length && now - S.pending[0].at > 2500) { const q = S.pending.shift(); slog('The answer to "' + q.line + '" was lost in the glitch (the machine is ' + S.state + ').'); q.res(S.state === 'Alarm' ? 'ALARM:' + (S.alarm || '?') : 'ok'); }
+        if (now - S.glitchAt > 10000) S.glitchAt = 0;
+      }
+      if (S.state === 'Alarm') S.homed = false;
+      if (!wp && mp) wp = [mp[0] - S.wco[0], mp[1] - S.wco[1]];
+      if (!mp && wp) mp = [wp[0] + S.wco[0], wp[1] + S.wco[1]];
+      if (mp) S.mp = mp; if (wp) S.wp = wp;
+      sUI(); return;
+    }
+    if (l === 'ok' || l.startsWith('error:')) {
+      const q = S.pending.shift();
+      if (l !== 'ok') slog(l + errText(l) + (q ? ' for "' + q.line + '"' : ''));
+      if (q) q.res(l);
+      return;
+    }
+    if (/^Grbl \d/.test(l)) {                         // the welcome line: GRBL has (re)started and forgot what was queued
+      slog(l); S.crit = false; S.homed = false; S.rst = 0; flushPending('reset');
+      const ws = S.bw; S.bw = []; ws.forEach(w => w(true));
+      if (S.poll) sRaw('?').catch(() => {});           // ask at once what state it is in now, so the badge does not show the old one
+      sUI(); return;
+    }
+    if (l.startsWith('ALARM:')) {
+      const n = l.slice(6).trim();
+      S.state = 'Alarm'; S.sub = ''; S.homed = false; S.alarm = n; S.alarmN++;
+      slog(l + ' (' + (pen ? alarmText(n) : 'click Unlock under First-time machine setup') + ')');
+      flushPending('ALARM:' + n);                     // what was waiting for an answer will not get one
+      if (n === '1' || n === '2') critReset(); else S.rst = Date.now();      // after every other alarm GRBL restarts by itself (up to 0.8 s)
+      if (pen && !S.job && !S.busy) smsg(alarmText(n) + ' Press Home.', true);
+      sUI(); return;
+    }
+    if (l.startsWith('[MSG:')) {
+      slog(l);
+      if (l.includes('grbl_pen')) S.penFw = true;
+      else if (/to unlock/.test(l)) { S.state = 'Alarm'; S.sub = ''; S.homed = false; sUI(); }
+      else if (/Reset to continue/.test(l)) critReset();
+      return;
+    }
+    const m = l.match(/^\$(\d+)=([-\d.]+)/); if (m) { S.settings[m[1]] = parseFloat(m[2]); return; }
+    if (/JoystickDraw/.test(l) && !S.penFw) { S.joy = true; const ws = S.bw; S.bw = []; ws.forEach(w => w(false)); }   // the class joystick program, not GRBL
+    slog(l);
+  }
+  // Reads until the port is closed or the computer loses the board. A short glitch on the line (a framing, parity or
+  // overrun error, a break) only ends the current read: the browser gives a fresh stream and reading goes on.
+  async function readLoop() {
+    const dec = new TextDecoder(); const port = S.port;
+    let errs = 0, t0 = Date.now(), why = '';
+    while (S.port === port && port.readable) {
+      let err = null;
+      try {
+        S.reader = port.readable.getReader();
+        for (;;) {
+          const { value, done } = await S.reader.read(); if (done) break;
+          S.buf += dec.decode(value, { stream: true });
+          let i; while ((i = S.buf.indexOf('\n')) >= 0) { const l = S.buf.slice(0, i).replace(/[^\x20-\x7e]/g, '').trim(); S.buf = S.buf.slice(i + 1); onLine(l); }
+        }
+      } catch (e) { err = e; }
+      try { S.reader.releaseLock(); } catch (e) {}
+      S.reader = null;
+      if (!err) break;                                  // the page closed the port
+      const glitch = ['BreakError', 'FramingError', 'ParityError', 'BufferOverrunError'].includes(err.name);
+      if (!glitch) { why = (err.name || 'Error') + ': ' + err.message; break; }    // NetworkError = the board is gone
+      slog('Serial glitch (' + err.name + '), still connected.');
+      S.glitchAt = Date.now();                          // an answer may have been lost: see the check in onLine
+      if (Date.now() - t0 > 5000) { errs = 0; t0 = Date.now(); }
+      if (++errs > 20) { why = 'too many serial errors in a row (' + err.name + ')'; break; }
+    }
+    if (why) slog('Connection lost: ' + why);
+    if (S.port === port) sClose(true);
+  }
+  const waitBanner = ms => new Promise(res => { S.bw.push(res); setTimeout(() => { const i = S.bw.indexOf(res); if (i >= 0) { S.bw.splice(i, 1); res(false); } }, ms); });
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // soft reset: GRBL drops what it had queued and starts again (the pen firmware lifts the pen). Waits up to ms for its welcome line.
+  async function softReset(ms) { const w = waitBanner(ms); S.rst = Date.now(); await sRaw('\x18').catch(() => {}); return w; }
+  // After a limit alarm (ALARM:1, ALARM:2) GRBL prints [MSG:Reset to continue] and then listens to nothing but a reset.
+  // Send that reset, so that the machine answers again (status, settings). It stays locked until Home.
+  let critBusy = false;
+  async function critReset() {
+    S.crit = true;
+    if (critBusy || S.busy) return;                   // Home, Stop and Reset machine settings send the reset themselves
+    critBusy = true;
+    await sleep(300);                                 // GRBL only looks for the reset once it has finished printing the alarm
+    for (let i = 0; i < 3 && S.on && S.crit && !S.busy; i++) await softReset(1500);
+    critBusy = false;
+  }
+  // Wait until GRBL listens again: the reset after a limit alarm is through, and a restart that is under way has printed its
+  // welcome line (what is sent before that line is thrown away by GRBL, and a second reset would make it start over).
+  const critDone = async () => { while (critBusy) await sleep(50); for (let i = 0; i < 50 && S.on && S.rst && Date.now() - S.rst < 2000; i++) await sleep(40); };
+  async function sClose(lost) {
+    const port = S.port; if (!port) return;
+    S.on = false; S.port = null; clearInterval(S.poll); flushPending('closed'); if (S.job) S.job.stop = true;
+    const ws = S.bw; S.bw = []; ws.forEach(w => w(false));   // a start that waits for the welcome line stops waiting
+    try { if (S.reader) await S.reader.cancel(); } catch (e) {}
+    try { if (S.writer) { S.writer.releaseLock(); } } catch (e) {}
+    S.writer = null;
+    try { await port.close(); } catch (e) {}
+    S.state = ''; S.zeroed = false; S.held = false; S.mp = S.wp = null; $('sPos').textContent = '';
+    S.homed = false; S.homing = false; S.crit = false; S.pn = ''; S.statAt = 0; S.starting = false;
+    const note = $('sNote'); note.classList.remove('bad');
+    note.textContent = lost ? 'The connection dropped: the computer lost the Arduino. Check the USB cable and connect again. If it drops every time the motors or the pen start, it is the power or the wiring (see Troubleshooting).' : 'Disconnected.';
+    sUI();
+  }
+  // what is on the other end, said once the settings have been read
+  function connectNote() {
+    const note = $('sNote'), s = S.settings, pen = machine === 'pen';
+    let t, bad = false;
+    if (pen) {
+      if (!S.penFw) { bad = true; t = 'Connected, but this Arduino runs plain GRBL, not the class pen firmware (grbl_pen): Pen up, Pen down and Home will not work. Upload grbl_pen to the Arduino, or choose "No pen lift (one line)" under 3 · Machine.'; }
+      else if (s['22'] === 0) { bad = true; t = 'Connected, but homing is switched off in this Arduino\'s settings. Open Machine setup and tests and click Reset machine settings.'; }
+      else t = 'Connected to the pen firmware (grbl_pen).';
+    } else {
+      t = 'Connected to GRBL.' + (s['100'] !== undefined && Math.abs(s['100'] - 40) > 0.01 ? ' This Arduino still has default settings: open First-time machine setup and click Send machine settings.' : '')
+        + (S.penFw && s['22'] === 1 ? ' It has the pen-lift firmware: for the one-line mode open First-time machine setup, click Send machine settings once, then Unlock.' : '');
+    }
+    note.textContent = t; note.classList.toggle('bad', bad);
+  }
+  // pen-lift machine: the firmware refuses moves beyond $130 (X) and $131 (Y). Make them the page's machine area, so that the
+  // jog buttons stop where the drawings stop. Returns what changed ('' = nothing), or null when the machine refused.
+  async function syncArea() {
+    if (machine !== 'pen' || !S.on || !S.penFw) return '';
+    const P = penSet(), was = [S.settings['130'], S.settings['131']], want = [P.ax, P.ay];
+    let changed = false;
+    for (let i = 0; i < 2; i++) {
+      if (was[i] !== undefined && Math.abs(was[i] - want[i]) < 0.0005) continue;
+      const k = String(130 + i), r = await sCmd('$' + k + '=' + fmtN(want[i]), true, 4000);
+      if (r !== 'ok') { slog('The machine did not take $' + k + '=' + fmtN(want[i]) + ' (' + r + errText(r) + ').'); return null; }
+      S.settings[k] = want[i]; changed = true;
+    }
+    if (!changed) return '';
+    const msg = 'Machine area set to ' + fmtN(want[0]) + ' × ' + fmtN(want[1]) + ' mm' + (was[0] !== undefined && was[1] !== undefined ? ' (it was ' + fmtN(was[0]) + ' × ' + fmtN(was[1]) + ').' : '.');
+    slog(msg); return msg;
+  }
+  async function sConnect() {
+    if (S.on || S.port) {
+      // pen-lift machine: before letting go of the port, stop what is moving (the reset also lifts the pen)
+      if (machine === 'pen' && S.on && (S.job || S.busy || /^(Run|Jog|Hold|Home)/.test(S.state))) { if (S.job) S.job.stop = true; await sRaw('\x18').catch(() => {}); await sleep(150); }
+      await sClose(false); return;
+    }
+    const note = $('sNote'); note.classList.remove('bad');
+    if (!('serial' in navigator)) { note.textContent = 'This browser cannot talk to USB devices. Open this page in Chrome or Edge on a computer, or use Download G-code with a sender app.'; return; }
+    let port;
+    try { port = await navigator.serial.requestPort(); }
+    catch (e) {
+      note.textContent = e.name === 'NotFoundError' ? 'No port was chosen. Click Connect and pick the Arduino (often "usbmodem" or "USB Serial").'
+        : 'The browser blocked USB access here. Save this page as a file (image_to_gcode.html), open that file in Chrome, and connect from there.';
+      return;
+    }
+    try { await port.open({ baudRate: 115200 }); }
+    catch (e) { note.textContent = 'Could not open the port. Close the Arduino Serial Monitor or any other sender app that is using it, then try again.'; return; }
+    S.port = port; S.writer = port.writable.getWriter(); S.buf = ''; S.pending = []; S.settings = {}; S.on = true; S.state = 'Starting…';
+    S.penFw = false; S.homed = false; S.homing = false; S.stopHome = false; S.busy = ''; S.crit = false; S.pn = ''; S.statAt = 0; S.alarm = ''; S.mp = S.wp = null; S.rst = 0;
+    S.joy = false; S.starting = true; S.glitchAt = 0;   // the buttons stay off until GRBL has answered
+    const mine = () => S.on && S.port === port;        // false once this connection was closed (Disconnect during the start)
+    $('sLog').textContent = ''; sUI(); readLoop();
+    note.textContent = 'Waiting for the Arduino to start…';
+    let ok = await waitBanner(3500);                    // an Uno restarts when the port opens and prints its banner
+    if (!ok && mine() && !S.joy) { await sRaw('\x18'); ok = await waitBanner(2500); }   // some boards do not restart: ask GRBL to
+    if (!mine()) return;
+    if (!ok) {
+      await sClose(false); note.classList.add('bad');
+      note.textContent = S.joy ? 'This Arduino runs JoystickDraw (the joystick program), not GRBL, so the page let go of it. Upload grbl_pen to the Arduino (Arduino IDE: File > Examples > grbl_pen > grblPenUpload), then connect again.'
+        : 'Something is connected, but it is not answering as GRBL. Upload GRBL to the Arduino first (for the pen machine: grbl_pen, see the instructions), then connect again.';
+      return;
+    }
+    if (await sCmd('$$', true, 4000) !== 'ok' && mine()) await sCmd('$$', true, 4000);   // read the settings (once more if a late restart cut the answer off)
+    if (!mine()) return;
+    const area = await syncArea();                      // pen-lift machine: its travel limits = this page's machine area
+    if (!mine()) return;
+    S.starting = false;
+    connectNote();
+    if (area) $('sNote').textContent += ' ' + area;
+    clearInterval(S.poll); S.poll = setInterval(() => { if (!S.homing) sRaw('?').catch(() => {}); swUI(); }, 250);   // status: state, position, limit switches
+    smsg(idleMsg());
+    sUI();
+  }
+  async function sJog(dx, dy) {
+    const pen = machine === 'pen';
+    if (pen && S.state === 'Alarm') { smsg(MSG_LOCKED + ' (To move the pen without homing, click Unlock under Machine setup and tests.)', true); return; }
+    const d = parseFloat($('jStep').value), f = pen ? penFeed() : Math.max(50, Math.round(num('feed') || 1500));
+    const r = await sCmd('$J=G91 G21 ' + (dx ? 'X' + (dx * d) : 'Y' + (dy * d)) + ' F' + f);
+    if (r === 'ok') return;
+    if (!pen) smsg('The machine refused to move (' + r + '). If it says locked, click Unlock.', true);
+    else if (r === 'error:15') smsg('That move would leave the machine area, so the machine did not move.' + (S.homed ? '' : ' The machine is not homed, so it does not know where the pen is: press Home.'), true);
+    else if (r === 'error:8' || r === 'error:9') smsg(MSG_LOCKED, true);
+    else if (!/^(ALARM|reset|closed)/.test(r)) smsg('The machine refused to move (' + r + ').', true);
+  }
+  const waitIdle = async () => { await sleep(700); for (let i = 0; i < 100000 && S.on && S.state !== 'Idle' && S.state !== 'Alarm'; i++) await sleep(200); };
+  // Stop the machine and keep its position where possible: feed hold (it brakes to a halt), then a soft reset (GRBL drops
+  // the moves it had queued; the pen firmware lifts the pen). True when no alarm came, that is, the position was kept.
+  async function haltReset() {
+    const a0 = S.alarmN, n0 = S.statN;
+    await sRaw('!').catch(() => {});
+    for (let i = 0; i < 30 && S.on; i++) {
+      await sleep(100);
+      // the first report after the hold may still show the state from before it
+      if (S.crit || (S.statN >= n0 + 2 && ((S.state === 'Hold' && S.sub === '0') || S.state === 'Idle' || S.state === 'Alarm'))) break;
+      sRaw('?').catch(() => {});
+    }
+    await softReset(2500);
+    return S.alarmN === a0;
+  }
+  async function sRun(text, label) {
+    if (S.job || !S.on) return;
+    const pen = machine === 'pen';
+    const lines = text.split('\n').map(l => l.replace(/;.*$/, '').replace(/\(.*?\)/g, '').trim()).filter(Boolean);
+    const job = S.job = { total: lines.length, done: 0, stop: false }; S.held = false;
+    smsg('Drawing ' + label + '… stay with the machine.'); sUI();
+    let fail = '';
+    // Keep GRBL's 128-byte receive buffer topped up (the "character counting" way of UGS) instead of waiting for each "ok"
+    // before sending the next line. One line at a time left GRBL's planner empty in detailed parts of a drawing (many moves
+    // under 1 mm): it then braked to a stop at the end of nearly every short move, so the machine shook and crawled.
+    const RX = 120, sent = []; let inBuf = 0;
+    const settle = async () => {
+      const q = sent.shift(); inBuf -= q.n;
+      const r = await q.p;
+      if (r !== 'ok') { if (!job.stop && !fail) fail = r; return false; }
+      job.done++; if (job.done % 5 === 0) sUI();
+      return true;
+    };
+    for (const l of lines) {
+      if (job.stop || fail) break;
+      const n = l.length + 1;
+      while (sent.length && inBuf + n > RX) if (!(await settle())) break;
+      if (job.stop || fail) break;
+      sent.push({ p: sCmd(l, true), n }); inBuf += n;
+    }
+    while (sent.length && !job.stop && !fail) await settle();   // the answers of the last lines (after a stop or a failure the reset that follows answers them)
+    if (!job.stop && !fail) { sUI(); await waitIdle(); }
+    if (pen) {
+      if (!job.stop && !fail && S.state === 'Alarm') fail = 'ALARM:' + S.alarm;
+      if (job.stop) { if (S.on && S.busy !== 'stop') smsg('Stopped. Press Home again before the next drawing.', true); }      // (the Stop button says more itself)
+      else if (fail) await penFailed(fail);
+      else smsg('Finished ' + label + '. The pen is up and the machine is back at home.');
+      S.job = null; S.held = false; sUI(); return;
+    }
+    S.job = null; S.held = false;
+    if (job.stop) smsg('Stopped. Lift the pen, then set zero again before the next drawing.', true);
+    else if (fail) smsg('The machine stopped accepting the drawing (' + fail + '). Check the log below.', true);
+    else smsg('Finished ' + label + '. Lift the pen before you move the machine.');
+    sUI();
+  }
+  // pen-lift machine: a drawing ended early, because of an alarm, an error answer or a restart
+  async function penFailed(fail) {
+    S.homed = false;
+    if (fail === 'closed') return;                    // the connection is gone; sClose() has said so
+    if (/^ALARM:/.test(fail)) {
+      await critDone();
+      smsg('The machine stopped the drawing. ' + alarmText(fail.slice(6)) + ' The pen is up. Press Home, then try again.', true);
+    } else if (fail === 'reset') {
+      smsg('The Arduino restarted in the middle of the drawing (check the USB cable and the 12V power). Press Home, then try again.', true);
+    } else {
+      // an error answer: GRBL would go on with the moves it has already queued, pen down. Stop it and lift the pen.
+      await haltReset();
+      smsg('The machine refused a line of the drawing (' + fail + errText(fail) + '), so the drawing was stopped. The pen is up. Press Home, then try again.', true);
+    }
+  }
+  async function sStop() {
+    if (machine === 'pen') { await penStop(); return; }
+    const job = S.job; if (!job) return;
+    job.stop = true; S.zeroed = false;
+    await sRaw('!');                                   // slow to a halt first, so no steps are lost
+    for (let i = 0; i < 15 && !(S.state === 'Hold' && S.sub === '0'); i++) await sleep(200);
+    const w = waitBanner(2500); await sRaw('\x18'); await w;     // then clear everything GRBL had queued
+    if (S.on) { await sleep(200); await sCmd('$X', true); }
+    sUI();
+  }
+  // pen-lift machine: Stop works at any time. It brakes, then resets GRBL, which lifts the pen. Home is needed afterwards.
+  async function penStop() {
+    if (!S.on || S.busy === 'stop') return;
+    if (S.job) S.job.stop = true;
+    S.homed = false;
+    if (S.busy === 'home') {                           // homing listens to nothing but a reset; sHome() says what happened
+      S.stopHome = true; S.rst = Date.now(); await sRaw('\x18').catch(() => {}); sUI(); return;
+    }
+    S.busy = 'stop'; smsg('Stopping…'); sUI();
+    const kept = await haltReset();
+    S.busy = '';
+    if (S.on) smsg(kept ? 'Stopped. The pen is up. The machine braked to a halt before it was reset, so it kept its position. Press Home again before the next drawing.'
+      : 'Stopped. The pen is up. The machine was reset while it was still moving, so it no longer knows where it is. Press Home.', true);
+    sUI();
+  }
+  // pen-lift machine: Home works in every state. A reset first (after a limit alarm GRBL listens to nothing else, and it
+  // lifts the pen), then $H, which answers only when the cycle is over.
+  async function sHome() {
+    if (!S.on || S.job || S.busy || S.starting) return;
+    S.busy = 'home'; S.homed = false; S.stopHome = false; sUI();
+    smsg('Getting ready to home…');
+    await critDone();
+    await softReset(2000);                             // no welcome line within 2 s: go on anyway
+    let r = S.on ? 'stopped' : 'closed';
+    const a0 = S.alarmN, t0 = Date.now();
+    if (S.on && !S.stopHome) {
+      S.homing = true; sUI();
+      const say = () => smsg('Homing… ' + Math.round((Date.now() - t0) / 1000) + ' s. The machine drives to its two limit switches; this can take up to 40 s. Press Stop if an axis runs away from its switch.');
+      say(); const tick = setInterval(say, 500);
+      r = await sCmd('$H', false, window.__homeTimeoutMs || 70000);
+      clearInterval(tick); S.homing = false;
+      if (r === 'ok' && S.on) {
+        // "ok" alone is no proof (GRBL also prints it after a failed cycle): the machine must now report Idle
+        const n0 = S.statN;
+        for (let i = 0; i < 25 && S.on && S.statN === n0; i++) { sRaw('?').catch(() => {}); await sleep(100); }
+        if (S.alarmN !== a0) r = 'ALARM:' + S.alarm; else if (S.statN === n0 || S.state !== 'Idle') r = 'state:' + (S.statN === n0 ? 'no answer' : S.state);
+      }
+      if (r === 'timeout' && S.on) await softReset(2500);
+    }
+    S.busy = '';
+    if (!S.on) return;
+    const again = ' Then press Home again.', flipTip = ' If an axis ran away from its switch, flip that axis (under Machine setup and tests).';
+    if (r === 'ok') { S.homed = true; smsg(idleMsg()); }
+    else if (S.stopHome) smsg('Homing was stopped. The pen is up and the machine is locked.' + flipTip + again, true);
+    else if (r === 'ALARM:9') smsg(alarmText('9') + flipTip + ' If nothing moved at all, check the 12V power.' + again, true);
+    else if (/^ALARM:/.test(r)) smsg(alarmText(r.slice(6)) + again, true);
+    else if (r === 'error:5') smsg(S.penFw ? 'Homing is switched off in this Arduino\'s settings. Open Machine setup and tests and click Reset machine settings.' + again
+      : 'This Arduino cannot home: it runs plain GRBL, not the class pen firmware (grbl_pen). Upload grbl_pen, or choose "No pen lift (one line)" under 3 · Machine.', true);
+    else if (r === 'timeout') smsg('Homing did not finish in time, so it was stopped. Check that both motors turn and that the belts are tight.' + again, true);
+    else if (r === 'reset') smsg('The Arduino restarted during homing (check the USB cable and the 12V power).' + again, true);
+    else smsg('Homing did not work (' + r + errText(r) + '). Press Home again.', true);
+    S.stopHome = false;
+    sUI();
+  }
+  // pen-lift machine: the three pen buttons. GRBL refuses them while it is locked, so say that instead of sending.
+  async function sPen(cmd, done) {
+    if (!S.on || S.job || S.busy) return;
+    if (S.state === 'Alarm') { smsg(MSG_LOCKED + ' The pen buttons work only after that.', true); return; }
+    const r = await sCmd(cmd);
+    if (r === 'ok') smsg(done);
+    else if (r === 'error:9' || r === 'error:8') smsg(MSG_LOCKED + ' The pen buttons work only after that.', true);
+    else if (/^error:/.test(r)) smsg('The machine refused the pen command (' + r + errText(r) + ').', true);
+  }
+  $('sConnect').addEventListener('click', () => sConnect().catch(e => { $('sNote').textContent = 'Connection problem: ' + e.message; }));
+  $('jXp').addEventListener('click', () => sJog(1, 0)); $('jXm').addEventListener('click', () => sJog(-1, 0));
+  $('jYp').addEventListener('click', () => sJog(0, 1)); $('jYm').addEventListener('click', () => sJog(0, -1));
+  $('sZero').addEventListener('click', async () => {
+    const r = await sCmd('G10 L20 P1 X0 Y0');
+    if (r === 'ok') { S.zeroed = true; smsg('Zero is set at the pen. Rest the pen on the paper and click Draw.'); } else smsg('Could not set zero (' + r + ').', true);
+    sUI();
+  });
+  $('sHome').addEventListener('click', () => sHome());
+  $('sPenUp').addEventListener('click', () => sPen('M5', 'Pen up.'));
+  $('sPenDown').addEventListener('click', () => { const d = fmtN(penSet().down); sPen('M3 S' + d, 'Pen down (S' + d + '). The pen must rest on the paper; if it hangs above it, raise Pen down value (S).'); });
+  $('sPenLoad').addEventListener('click', () => sPen('M3 S' + LOAD_S, 'Load position (S' + LOAD_S + '): put the pen in with its tip on the paper and click the yoke shut. Then press Pen up.'));
+  $('sDraw').addEventListener('click', () => { if (gcode) sRun(gcode, 'your picture'); });
+  $('sPause').addEventListener('click', async () => { if (!S.job) return; S.held = !S.held; await sRaw(S.held ? '!' : '~'); sUI(); });
+  $('sStop').addEventListener('click', () => sStop());
+  $('sUnlock').addEventListener('click', async () => {
+    if (machine === 'pen') { if (!S.on || S.busy) return; await critDone(); }
+    const r = await sCmd('$X');
+    if (machine === 'pen' && r === 'ok') smsg('Unlocked without homing: the jog and pen buttons work now. Draw still needs Home.');
+  });
+  $('sSettings').addEventListener('click', async () => {
+    const lines = LINE_GRBL.split('\n');
+    // keep a direction flip the user already made
+    const keep3 = S.settings['3'];
+    for (const l of lines) { if (l.startsWith('$3=') && keep3 !== undefined) continue; const r = await sCmd(l); if (r !== 'ok') { smsg('Setting ' + l + ' was refused (' + r + ').', true); return; } }
+    await sCmd('$$', true);
+    smsg('Machine settings saved on the Arduino.'); $('sNote').textContent = 'Connected to GRBL.';
+  });
+  // pen-lift machine: put every setting back to the firmware's defaults. Two clicks, so that it cannot happen by accident.
+  let resetArm = 0;
+  const disarm = () => { clearTimeout(resetArm); resetArm = 0; $('sReset').textContent = 'Reset machine settings'; };
+  $('sReset').addEventListener('click', async () => {
+    if (!S.on || S.job || S.busy) return;
+    if (!resetArm) {
+      $('sReset').textContent = 'Click again to reset'; resetArm = setTimeout(disarm, 5000);
+      smsg('This puts every setting on the Arduino back to the class defaults (also flipped directions). Click the button again within 5 s to do it.');
+      return;
+    }
+    disarm();
+    S.busy = 'reset'; S.homed = false; sUI();
+    await critDone();
+    const w = waitBanner(4000), r = await sCmd('$RST=$');        // GRBL restores, answers, then restarts
+    if (r === 'ok' || r === 'reset') {
+      await w; await sleep(100);
+      if (S.on) await sCmd('$$', true, 4000);
+      const area = S.on ? await syncArea() : '';       // the defaults of an older firmware may have another area
+      S.busy = '';
+      if (S.on) { connectNote(); smsg('The machine settings are back to the class defaults.' + (area ? ' ' + area : '') + ' Press Home.'); }
+    } else { S.busy = ''; smsg('The machine did not reset its settings (' + r + errText(r) + '). Press Stop, then try again.', true); }
+    sUI();
+  });
+  const flip = async bit => {
+    const pen = machine === 'pen';
+    if (pen) { if (!S.on || S.job || S.busy) return; await critDone(); }
+    const v = (S.settings['3'] || 0) ^ bit; const r = await sCmd('$3=' + v);
+    if (r === 'ok') {
+      S.settings['3'] = v;
+      if (pen) { S.homed = false; smsg((bit === 1 ? 'X' : 'Y') + ' direction flipped. Press Home again.'); sUI(); }
+      else smsg('Direction flipped. Try the jog buttons again.');
+    } else if (pen) smsg('The machine did not take the change (' + r + errText(r) + '). Press Stop, then try again.', true);
+  };
+  $('sFlipX').addEventListener('click', () => flip(1)); $('sFlipY').addEventListener('click', () => flip(2));
+  $('sSquare').addEventListener('click', async () => {
+    if (machine === 'pen') {
+      if (!S.homed || S.state === 'Alarm') { smsg('Press Home first: the test square is drawn from the home corner.', true); return; }
+      const P = penSet(), no = squareMisfit(P);
+      if (no) { smsg(no, true); return; }
+      sRun(penSquare(penFeed(), P), 'the 100 mm test square'); return;
+    }
+    const feed = Math.max(50, Math.round(num('feed') || 1500));
+    const r = await sCmd('G10 L20 P1 X0 Y0'); if (r !== 'ok') { smsg('Could not set zero (' + r + ').', true); return; }
+    sRun(toGcode([[0,0],[100,0],[100,100],[0,100],[0,0]], 'Test square', 100, 100, feed, 400), 'the 100 mm test square (it starts where the pen is now)');
+  });
+
+  // ---------- start ----------
+  loadPrefs();
+  setMachine(machine, true);
+  drawEmpty();
+})();
+</script>
+</body>
+</html>

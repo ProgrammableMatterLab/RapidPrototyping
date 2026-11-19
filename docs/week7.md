@@ -216,7 +216,7 @@ Your final presentation will include a live demonstration of the physical device
 
 ##### Sketches 
 
-Provide a sketch or other visual representation that communicates what the physical project will look like and what it will do. Hand-drawn sketches are welcome. Briefly annotate or label the sketch with key features related to its:
+Provide a sketch or other visual representation that communicates what the physical project will look like and what it will do. Hand-drawn sketches are welcome but you're free to use other tools (manually drawn or powerpoint/Canva/Figma/CAD). Briefly annotate or label the sketch with key features related to its:
 1. _Function/code_ (e.g. pressing this button makes the robot move forward)
 1. _Electronics_ (e.g. 2 stepper motors; 1 ultrasonic distance sensor)
 1. _CAD/Geometry_ (e.g. electronics enclosure; rack-and-pinion mechanism)

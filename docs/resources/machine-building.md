@@ -10,10 +10,14 @@ description: >-
 # Machine Building
 {: .no_toc .fs-9 }
 
-The pen plotter you build in class, and an example of how to write up your final project.
-{: .fs-6 .fw-300 }
+## Overview
 
-The **Your project** boxes have tips for your own write-up. Put it on your group's Google Site ([example site](https://sites.google.com/view/aa598-aut26-martin-nisser)).
+This page covers the machine building exercise. The purpose of the exercise and this documentation is to help you: 
+- See the kind of work and iterations required to build a functioning device
+- Plan and scope the technical aspects of your final projects
+- Illustrate the documentation being requested of your final projects    
+
+The machine detailed below is a 2D Drawing Machine. It contains detailed both **(1)** detailed instructions on how to assemble and operate it in lab and **(2)** documentation on its design and project management that illustrate many of the deliverables for the final project. The **Your project** boxes have tips documenting your own final project websites. 
 
 <details markdown="block">
   <summary>
@@ -27,17 +31,36 @@ The **Your project** boxes have tips for your own write-up. Put it on your group
 
 # Final Demo
 
-## Automatic drawing
+Our drawing machine has two modes of operation, demonstrated below.
+
+**Mode 1**: Draw from Image Upload. 
+- This lets you upload an image to a webtool that converts it to Gcode that the Arduino uses for automatic drawing of that image.
+
+**Mode 2**: Draw with Joystick.
+- This lets you use the joystick to manually draw an image, which you can then 'replay'; the Arduino records the joystick commands and can automatically execute the same drawing.
+
+## Mode 1: Automatic drawing from an image upload
 {: .no_toc }
 
+### Image upload & Gcode generation
+{: .no_toc }
+
+<figure style="text-align: center;">
+  <img src="{{ '/assets/images/machine-build/final_upload.gif' | relative_url }}"
+       alt="Animation: the converter page while it sends the W drawing to the machine"
+       style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
+  <figcaption>Figure: The image converter page sending a drawing to the machine.</figcaption>
+</figure>
+
+### Automatic Drawing of Image 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/final_auto.gif' | relative_url }}"
        alt="Animation: the machine draws a W on its own from G-code that the converter page sends"
        style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
-  <figcaption>Figure: GRBL drawing a W sent from the converter page.</figcaption>
+  <figcaption>Figure: GRBL drawing a UW logo sent from the image converter page.</figcaption>
 </figure>
 
-## Tracing with the joystick
+## Mode 2: Manual drawing using a joystick & Automatic replay
 {: .no_toc }
 
 <figure style="text-align: center;">
@@ -47,15 +70,7 @@ The **Your project** boxes have tips for your own write-up. Put it on your group
   <figcaption>Figure: Drawing by hand with the joystick (JoystickDraw), then the machine redraws the path.</figcaption>
 </figure>
 
-## Image upload
-{: .no_toc }
 
-<figure style="text-align: center;">
-  <img src="{{ '/assets/images/machine-build/final_upload.gif' | relative_url }}"
-       alt="Animation: the converter page while it sends the W drawing to the machine"
-       style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
-  <figcaption>Figure: The converter page sending a drawing to the machine.</figcaption>
-</figure>
 
 {: .highlight }
 > **Your project:** put a short GIF of your device working at the top of your page.
@@ -64,11 +79,10 @@ The **Your project** boxes have tips for your own write-up. Put it on your group
 
 # Development Process
 
-Our PDR and CDR deliverables for the drawing machine.
+In this section, we have used our Drawing Machine to write up many of the deliverables being asked for from your final projects, spanning deliverables from the CoDR, PDR, CDR, and Final Build.
 {: .fs-5 .fw-300 }
 
-{: .highlight }
-> **Your project:** you can bring in any outside tool or method, like FEM on a bracket or a web framework for your interface. Tell us what you used and how.
+
 
 ## Design Objective
 
@@ -92,7 +106,8 @@ Drawing a picture by hand takes skill and time, and aren't easy to copy accurate
 - With 13 printed parts, and a wide range of components introduced in the course, it relies largely on components and fabrication topics already covered. 
 - It also integrates a custom G-code generation tool for automatic plotting; an example of a feature that goes _beyond_ the class topics, which is one of the full-credit suggestions.
 
-
+{: .highlight }
+> **Your project:** You are welcome and encouraged to leverage any skills/techniques/tools you have learnt outside of this class and bring them to bear on the final project. It could be applying a PID controller for motor control, FEA to maximize strength-to-weight ratio of a crucial bracket, or a web framework for a user interface. Tell us what you used and how.
 
 
 ## Functional Requirements
@@ -105,7 +120,7 @@ The functional requirements of the 2D drawing machine are:
 1. Does not drop pen; does not damage itself during operation. _The ratchet clamp holds the pen. Homing stops at the switches, and after that the firmware won't move past the edge of the work area._
 
 {: .highlight }
-> **Your project:** a functional requirement says what the device does. How well it does it belongs in the performance requirements. Each one should map to a part of your design.
+> **Your project:** a functional requirement says what the device does. How well it does it belongs in the performance requirements. 
 
 ## Performance Requirements
 
@@ -125,7 +140,7 @@ The performance requirements of the 2D drawing machine are:
   <img src="{{ '/assets/images/machine-build/design_iterations.png' | relative_url }}"
        alt="Six pictures in two rows, all from the same angle and at the same scale: a hand sketch of a plotter on two side rails, the X axis on its own, then CAD versions V2, V3, V4 and V5.1. Circles mark what changed, with a close-up of the circled part for V3, V4 and V5.1."
        style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
-  <figcaption>Figure: From the first sketch to V5.1 with the 400 mm rods, the version you build. Stage 2 shows only the X axis of V2, and stages 2 and 3 have no belts drawn. V1, our first full CAD, is left out.</figcaption>
+  <figcaption>Figure: From the first sketch to V5.1 with the 350 mm rods, the version you build. Stage 2 shows only the X axis of V2, and stages 2 and 3 have no belts drawn. V1, our first full CAD, is left out.</figcaption>
 </figure>
 
 | Stage | What we built | What we learned and changed next |
@@ -137,10 +152,11 @@ The performance requirements of the 2D drawing machine are:
 | 5 CAD V4 | Back to a screw and nut on every rod end, as in V2. The belt ends press into toothed channels, and the pen slider runs on a dovetail on the arm head | The pen slider snagged on its dovetail. Both were printed standing up, so their layer lines caught on each other. |
 | 6 CAD V5.1 | The pen slides on its own T rail (32), printed lying down. It touches the rail at two shoes with a 0.40 mm gap. We also refitted the X switch pocket. | We should have printed a test piece of the slide first. V5.1 comes with test pieces with gaps from 0.30 to 0.60 mm. |
 
-After V5.1 we changed the rods. V5.1 was drawn with 430 mm rail rods and 300 mm arm rods, and you build it with four identical 8 × 400 mm rods. The printed parts didn't change. The X idler end sits 30 mm closer to the X motor and the arm tail 100 mm further out. In CAD that gives about 310 × 290 mm instead of 340 × 190 mm, but on our real machine the carriage stops at 260 mm in X, so we use a 260 × 240 mm work area.
+[//]: # After V5.1 we changed the rod sizes. V5.1 was drawn with 430 mm rail rods and 300 mm arm rods, but the final build has four identical 8 × 400 mm rods. The printed parts didn't change. The X idler end sits 30 mm closer to the X motor and the arm tail 100 mm further out. In CAD that gives about 310 × 290 mm instead of 340 × 190 mm, but on our real machine the carriage stops at 260 mm in X, so we have a 260 × 240 mm work area.
 
 {: .highlight }
-> **Your project:** show each version and what went wrong with it. Get one piece working first (for us that was one rail) and build on it.
+> **Your project:** Show any major iterations and what changed. In general, get the most important/foundational thing working rudimentarily first, (for us that was one rail) and then iterate on it while adding other parts. To accelerate development, print small test pieces of key features (like toleranced sliding or snap fit features) before the real part, and start testing your code and electronics in parallel before the CAD is ready.
+
 
 
 ## System Block Diagram
@@ -164,16 +180,17 @@ After V5.1 we changed the rods. V5.1 was drawn with 430 mm rail rods and 300 mm 
   <figcaption>Figure: Schematic of every electrical connection.</figcaption>
 </figure>
 
-The schematic shows which pin goes where, with each part drawn as a symbol, but not where the parts sit. The [wiring diagram](#electronics) further down shows the same connections on the real parts and the breadboard. Wire from that, and use the schematic to check and explain the circuit.
+The schematic shows which pin goes where, with each part drawn as a symbol. The [wiring diagram](#electronics) further down shows the same connections on the real parts and the breadboard, with a friendlier graphical representation and annotations. Wire from that, and use the schematic to check and explain the circuit.
 
 {: .highlight }
-> **Your project:** make both a schematic and a wiring diagram.
+> **Your project:** It's useful to provide both a schematic and a wiring diagram.
 
 ## Software
 
 The Arduino runs one of two programs on the same wiring: JoystickDraw when you draw by hand, or GRBL when it draws a picture from the converter page.
 
 ### JoystickDraw pseudocode
+{: .no_toc }
 
 ```
 pins: STEP X2 Y3, DIR X5 Y6, EN 8, LIMIT X9 Y10, SERVO 11, JOYSTICK A4 A5 D12
@@ -211,11 +228,12 @@ redraw()
 
 JoystickDraw only uses the limit switches for homing. After that it keeps track of where the pen is and stops it at the edge of the work area.
 
-### GRBL and the converter page
+### GRBL and the Image Converter page
+{: .no_toc }
 
 Our GRBL, the `grbl_pen` library, has a pen servo, two-switch homing and the plotter's settings built in. You [upload it](#arduino-programs) once, and from then on the Arduino reads G-code lines from USB and moves the motors and the servo.
 
-The converter page sends the G-code one line at a time and waits for GRBL's `ok` before it sends the next. We only use five commands: `G0` moves fast with the pen up, `G1` draws a straight line, `M3 S70` puts the pen down, `M5` lifts it and `$H` homes.
+The [Image Converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }}) sends the G-code one line at a time and waits for GRBL's `ok` before it sends the next. We only use five commands: `G0` moves fast with the pen up, `G1` draws a straight line, `M3 S70` puts the pen down, `M5` lifts it and `$H` homes.
 
 {: .highlight }
 > **Your project:** write pseudocode for your main functions and your loop. It should fit on one screen.
@@ -229,47 +247,38 @@ The converter page sends the G-code one line at a time and waits for GRBL's `ok`
   <figcaption>Figure: The parts for one machine. The electronics on the table (26 to 31 and 33 to 35) are listed at the bottom.</figcaption>
 </figure>
 
-These come from the class kit. Each link goes to the page we took the price from.
+Below is the BoM for the drawing machine. All these materials and components are provided in class. 
 
-| Item | Units | Unit cost | Total |
+
+| Item | Units | Unit cost | Subtotal |
 |---|---|---|---|
-| [PLA filament 1.75 mm, for printed parts 01 to 10 and 32](https://www.matterhackers.com/store/3d-printer-filament/175mm-pla-filament-black-1-kg) | 0.2 kg | $19.99/kg | $4.00 |
-| [Steel rod 8 × 400 mm, hardened, set of 4 (11, 12): two for the base rail, two for the arm](https://www.harfington.com/products/p-1756906) | 4 | $5.42 (set of 4 $21.68) | $21.68 |
-| [Stepper motor NEMA 17, 1.5 A (14)](https://www.omc-stepperonline.com/nema-17-bipolar-45ncm-63-74oz-in-1-5a-42x42x39mm-4-wires-w-1m-pin-connector-17hs15-1504s-x1) | 2 | $9.13 | $18.26 |
-| [Micro servo MS18, SG90 size (23), priced as the similar MG90S](https://protosupplies.com/product/servo-motor-micro-mg90s/) | 1 | $5.49 | $5.49 |
-| [Limit switch KW12-3, roller lever (24)](https://www.amazon.com/dp/B07X142VGC) | 2 | $0.99 (est., 10-pack) | $1.98 |
-| [Pen, fine marker (25)](https://www.staples.com/sharpie-permanent-markers-fine-tip-black-12-pack-1812419/product_371792) | 1 | $1.06 (12-pack $12.69) | $1.06 |
-| [Arduino Uno R3 (26)](https://store-usa.arduino.cc/products/arduino-uno-rev3) | 1 | $27.60 | $27.60 |
-| [USB cable A to B (26)](https://www.adafruit.com/product/62) | 1 | $3.95 | $3.95 |
-| [Stepper driver BIGTREETECH TMC2209 V1.3 (27)](https://biqu.equipment/collections/driver-board/products/bigtreetech-tmc2209-stepper-motor-driver-for-3d-printer-board-vs-tmc2208) | 2 | $7.89 | $15.78 |
-| [Breadboard, 830 points (28)](https://www.adafruit.com/product/239) | 1 | $5.95 | $5.95 |
-| [Power adapter 12V 2A (29)](https://www.waveshare.com/ord-psu-12v2a-5.5-2.1.htm?sku=19175) | 1 | $6.99 | $6.99 |
-| [Buck converter LM2596 (30)](https://protosupplies.com/product/lm2596s-adjustable-dc-dc-step-down-module/) | 1 | $1.59 | $1.59 |
-| [Jumper wires M/M, 150 mm, pack of 40 (31)](https://www.adafruit.com/product/758) | 1 | $3.95 | $3.95 |
-| [Jumper wires F/M, 300 mm, pack of 40 (31), long leads to the carriage](https://www.adafruit.com/product/824) | 1 | $7.95 | $7.95 |
-| [Joystick HW-504 (33), ask the staff](https://protosupplies.com/product/joystick-module/) | 1 | $1.59 | $1.59 |
-| **Subtotal** | | | **about $128** |
+| PLA filament 1.75 mm, for printed parts 01 to 10 and 32 | 0.2 kg | $19.99/kg | $4.00 |
+| Steel rod 8 × 350 mm, hardened, set of 4 (11, 12): two for the base rail, two for the arm | 4 | $5.42 (set of 4 $21.68) | $21.68 |
+| Stepper motor NEMA 17, 1.5 A (14) | 2 | $9.13 | $18.26 |
+| Micro servo MS18, SG90 size (23), priced as the similar MG90S | 1 | $5.49 | $5.49 |
+| Limit switch KW12-3, roller lever (24) | 2 | $0.99 (est., 10-pack) | $1.98 |
+| Pen, fine marker (25) | 1 | $1.06 (12-pack $12.69) | $1.06 |
+| Arduino Uno R3 (26) | 1 | $27.60 | $27.60 |
+| USB cable A to B (26) | 1 | $3.95 | $3.95 |
+| Stepper driver BIGTREETECH TMC2209 V1.3 (27) | 2 | $7.89 | $15.78 |
+| Breadboard, 830 points (28) | 1 | $5.95 | $5.95 |
+| Power adapter 12V 2A (29) | 1 | $6.99 | $6.99 |
+| Buck converter LM2596 (30) | 1 | $1.59 | $1.59 |
+| Jumper wires M/M, 150 mm, pack of 40 (31) | 1 | $3.95 | $3.95 |
+| Jumper wires F/M, 300 mm, pack of 40 (31), long leads to the carriage | 1 | $7.95 | $7.95 |
+| Joystick HW-504 (33), ask the staff | 1 | $1.59 | $1.59 |
+| Linear bearing LM8LUU, 45 mm long (13) | 4 | $2.12 | $8.48 |
+| GT2 belt 6 mm + 20-tooth pulleys kit (17, 15) | 1.6 m | $2.85/m (kit $14.24: 5 m belt + 8 pulleys) | $4.56 |
+| GT2 idler, 3 mm bore (16) | 2 | $1.84 | $3.68 |
+| M3 screw and nut kit (18 to 22) | 1 kit | $6.29 (est.) | $6.29 |
+| Capacitor 100µF, 25V (34) | 1 | $0.50 | $0.50 |
+| DC jack to screw terminal (35) | 1 | $0.85 | $0.85 |
+| **Total** |  |  | **about $152** |
 
-You buy these yourself:
-
-| Item | Units | Unit cost | Why | Total |
-|---|---|---|---|---|
-| [Linear bearing LM8LUU, 45 mm long (13)](https://www.amazon.com/dp/B0HKPS5LBV) | 4 | $2.12 | Carriage on the rail, arm through the carriage | $8.48 |
-| [GT2 belt 6 mm + 20-tooth pulleys kit (17, 15)](https://www.amazon.com/dp/B07XG9JN5B) | 1.6 m | $2.85/m (kit $14.24: 5 m belt + 8 pulleys) | X and Y drive. Belts cut to 920 and 552 mm, plus spare | $4.56 |
-| [GT2 idler, 3 mm bore (16)](https://www.harfington.com/products/p-1593539) | 2 | $1.84 | Turns each belt around | $3.68 |
-| [M3 screw and nut kit (18 to 22)](https://www.amazon.com/dp/B0DZT7HVTM) | 1 kit | $6.29 (est.) | Motor mounts, rod locks, idler axles, pen rail | $6.29 |
-| [Capacitor 100µF, 25V (34)](https://www.sparkfun.com/products/96) | 1 | $0.50 | Smooths the 12V supply | $0.50 |
-| [DC jack to screw terminal (35)](https://www.amazon.com/dp/B079RCNNCK) | 1 | $0.85 | Gets the 12V adapter onto the breadboard | $0.85 |
-| **Subtotal** | | | | **about $24** |
-
-So one machine costs about $152, $128 from the class kit and $24 you buy yourself.
-
-The printed parts are 212 cm³ in CAD. With 3 walls, 20% infill, brim and supports that's about 0.2 kg of PLA.
-
-We checked the prices on Nov 16 to 18, 2026.
+So one machine costs about $152 in parts. The printed parts are 212 cm³ in CAD. With 3 walls, 20% infill, brim and supports that's about 0.2 kg of PLA.
 
 {: .highlight }
-> **Your project:** make two lists, one for the class kit and one for what you buy, with a link, units, unit cost and total for each item. Count the electronics and the filament too, and say why you need each thing you buy.
+> **Your project:** make two BoMs, one from the class parts and a separate requested BoM for items not provided in class already, including a purchasing links, units, unit cost and total (detailed instructions provided in the CoDR). Count the electronics and the filament too, and say why you need each thing you buy.
 
 ## Risk Assessment
 
@@ -289,6 +298,7 @@ We checked the prices on Nov 16 to 18, 2026.
 For example, R1 Software started as likely (3) × severe (4) = 12, red. Doing the simple line styles first makes it unlikely (2), and the joystick fallback limits the harm (2), so it ends up at 2 × 2 = 4.
 
 ### Risk Identification
+{: .no_toc }
 
 The two numbers are the score before and after mitigation.
 
@@ -298,6 +308,9 @@ The two numbers are the score before and after mitigation.
 - R4 Wiring damage (6, then 2). Unplugging a motor with 12V on, or putting 12V on a 5V pin, kills a driver or the Arduino.
 
 ### Risk Mitigation/Downscope
+{: .no_toc }
+
+Below are the risk mitigation strategies we took, and possible downscoping adjustments; design changes we could make that simplify the build but still give us a meaningful project and demo.
 
 | Risk | Mitigation | Downscope (fallback) |
 |---|---|---|
@@ -307,6 +320,9 @@ The two numbers are the score before and after mitigation.
 | R4 Wiring damage | Go through the checklist before 12V goes on, and set the buck converter to 5.0V before the servo goes on | Order spare drivers in week 1 |
 
 ### Upscope
+{: .no_toc }
+
+Below are possible upscoping adjustments; design changes we could make that augment the build with more advanced capabilities, if work proceeded faster than expected.
 
 - A tool changer for drawing in 3 pen colors.
 - Fill areas with hatching.
@@ -338,6 +354,7 @@ The critical path, highlighted in yellow, is M1, M2, M3, E3, D1, D2, D3 and the 
 | Docs and tests | First homing + test square, Drawing tests + tuning, Docs + demo video |
 
 ### Updated Gantt chart
+{: .no_toc }
 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/gantt_updated.png' | relative_url }}"
@@ -346,7 +363,7 @@ The critical path, highlighted in yellow, is M1, M2, M3, E3, D1, D2, D3 and the 
   <figcaption>Figure: Thin grey bars show the original plan where it changed, and colored bars show what happened and the new plan.</figcaption>
 </figure>
 
-You hand in an updated chart at every milestone. This is ours on Thu Dec 3, marked by the Today line.
+Here is an updated Gantt chart, one week after the original was made. This is ours on Thu Dec 3, marked by the Today line.
 
 The electronics ran 4 days late. Breadboard + motor test (E1) took 5 days instead of 2 because a stepper driver failed when a motor was unplugged with 12V on. The spare we'd ordered in week 1 (the R4 fallback) went in on Nov 30. Limit switches + servo (E2) took 2 days instead of 1. The Y limit switch read "pressed" all the time because of a broken wire.
 
@@ -355,18 +372,15 @@ The electronics had 3 days of slack, so Mount electronics (E3) only moved one da
 The mechanical work finished on time on Dec 1 and now has a day of slack, so the critical path runs through the electronics: E1, E2, E3, D1, D2, D3 and the buffer. Flash GRBL (C1) and the joystick program (C2) also wait for E2 (see the arrows from E2), so they moved to Dec 3 and have no slack left either.
 
 {: .highlight }
-> **Your project:** name bars after your own parts, like "print rack-and-pinion" instead of "fabrication", and give each bar one owner. Mark the PDR, CDR and final, and leave 1 to 2 buffer days before the final. At each milestone, show the plan next to what happened, mark today and say where your buffer went.
+> **Your project:** In your Gantt chart, name bars after your own parts, like "print rack-and-pinion" instead of "fabrication", and give each bar one owner. Mark the PDR, CDR and final, and leave 1 to 2 buffer days before the final. At each milestone, show the plan next to what happened, mark today and say where your buffer went.
 
-## How it went
 
-We tested both programs on a simulator of the machine before we tried them on hardware. That caught most bugs, but not all of them. On the real machine the converter page kept disconnecting, and it turned out the Uno was still running JoystickDraw. Then the rods in the kit were all 400 mm, not the 430 and 300 mm we had drawn, so we redid the CAD figures. The new CAD allowed about 310 × 290 mm, but on our real machine the carriage stops at 260 mm in X, so the drawing area is 260 × 240 mm.
-
-{: .highlight }
-> **Your project:** print a test piece of each sliding or snap fit before the real part, and start testing your code before the hardware is ready.
 
 ---
 
-# Build Instructions
+## Functional Overview
+
+At the beginning of the Final Project, in the CoDR, you're asked to provide a rough sketch of what your device will look like, annotated with key features. For the Final Build, you can provide a high-quality rendering annotated with key features that were ultimately integrated into your build. 
 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/overview_annotated.png' | relative_url }}"
@@ -375,10 +389,11 @@ We tested both programs on a simulator of the machine before we tried them on ha
   <figcaption>Figure: The drawing machine and what each part does.</figcaption>
 </figure>
 
-{: .important }
-> On build day, do [assembly](#assembly-instructions) steps 1 to 9 and the [wiring](#electronics). Then upload GRBL ([Arduino programs](#arduino-programs)) and go through steps 1 to 5 of [the converter website](#the-converter-website).
 
-## CAD
+
+## CAD & Mechanical Overview
+
+This section details an exploded CAD diagram annotated with BoM components, and some potentially non-obvious design rationales for key parts.
 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/exploded.png' | relative_url }}"
@@ -390,19 +405,16 @@ We tested both programs on a simulator of the machine before we tried them on ha
 | Part | Decision | Why |
 |---|---|---|
 | Rail (11, 13) | Two 8 mm steel rods on linear bearings | Stiff and smooth for little money. Printed slides would bend and wear. |
-| Rods (11, 12) | All four rods are 8 × 400 mm | One stock length and no cutting. The CAD allows about 310 × 290 mm, but on our real machine the carriage stops at 260 mm in X, so we use 260 × 240 mm. |
-| Arm (07, 08, 12) | The arm slides through the carriage | One rail instead of two, so nothing can go out of square |
-| Drive (14 to 17) | GT2 belts, 20-tooth pulleys, 1/8 step | 40 steps per mm. Belts are cheap and reach the 100 mm/s we need. |
+| Drive (14 to 17) | GT2 belts, 20-tooth pulleys, 1/8 step | 40 steps per mm. Belts are cheap and better suited to transmitting stepper rotary to gantry linear motion than e.g. rack-and-pinion. |
 | Joints (19, 22) | Each rod end locked by one M3 screw and nut | No glue, so any part comes off for a reprint. You tension a belt by sliding a part along its rods. |
 | Pen lift (09, 23) | Gravity lowers the pen and the servo only lifts it | Same pen pressure every time |
 | Pen rail (32) | A separate T rail that the slider touches at two shoes only | It doesn't snag like the V4 dovetail did, and it prints lying down so the layer lines run along the slide |
 | Pen clamp (10) | Yoke on two ratchet racks | Takes any pen from 6 to 21 mm without tools |
-| Limit switches (24) | Wired normally closed (NC) | A loose wire stops homing before anything crashes |
-| Printed parts | Flat sketches and extrudes, one 220 × 220 mm bed | Easy to redraw in Onshape and to print |
+
 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/key_dimensions.png' | relative_url }}"
-       alt="Top view of the plotter at home with dimension lines for the 457 mm length, the 110 mm base, the 400 mm rail rods, the 400 mm arm rods and the 260 by 240 mm work area, a side view with the 140 mm height, and a close-up of the 5 mm pen lift"
+       alt="Top view of the plotter at home with dimension lines for the 457 mm length, the 110 mm base, the 350 mm rail rods, the 350 mm arm rods and the 260 by 240 mm work area, a side view with the 140 mm height, and a close-up of the 5 mm pen lift"
        style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
   <figcaption>Figure: Main dimensions in mm.</figcaption>
 </figure>
@@ -414,12 +426,20 @@ We tested both programs on a simulator of the machine before we tried them on ha
   <figcaption>Figure: The pen holder with the pen up (M5, lifted 5 mm) and down (M3 S70).</figcaption>
 </figure>
 
-Downloads: [whole machine, V5.1 with the 400 mm rods (STEP)]({{ '/assets/machine-build/Machine_V5.1_rods400.step' | relative_url }}) · [pen rail fit test pieces (STEP)]({{ '/assets/machine-build/PenSlide_V5.1_test_pieces.step' | relative_url }}).
+[//]: # Downloads: [whole machine, V5.1 with the 350 mm rods (STEP)]({{ '/assets/machine-build/Machine_V5.1_rods400.step' | relative_url }}) · [pen rail fit test pieces (STEP)]({{ '/assets/machine-build/PenSlide_V5.1_test_pieces.step' | relative_url }}).
 
 {: .highlight }
 > **Your project:** include an exploded view with part numbers, one view with the dimensions that matter, and a short table of your design decisions and why you made them.
 
-## Assembly Instructions
+# Assembly Instructions
+
+This section details how to assemble and operate the machine, including all mechanical assembly steps, wiring diagrams, and software/arduino files. All these components are provided for you. 
+
+{: .important }
+> On build day, do [assembly](#assembly-instructions) steps 1 to 9 and the [wiring](#electronics). Then upload GRBL ([Arduino programs](#arduino-programs)) and go through steps 1 to 5 of [the image converter website](#the-image-converter-website).
+
+
+## Mechanical Parts
 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/steps_overview.png' | relative_url }}"
@@ -436,11 +456,10 @@ You'll need these tools:
 - 2.5 mm hex key for all the M3 screws
 - 1.5 mm hex key for the set screws of the two pulleys (2.0 mm if yours are M4)
 - Small Phillips screwdriver for the servo's two small screws
-- Flush cutters or strong scissors for the belts
-- A 1 m ruler or tape measure
+- Cutters or strong scissors for the belts (optional)
 - Tweezers or long-nose pliers for the nuts (optional)
 
-Cut the two belts (part 17) first. Cut square, between two teeth. Counting teeth (2 mm each) is more accurate than measuring.
+**Belt adjustment**: We have pre-cut the two belts (part 17) for you. You should not have to make adjustments, but in case you do, please **let us know first**. You'll need to ensure you cut square, between two teeth. Counting teeth (2 mm each) is more accurate than measuring:
 
 - X belt, **920 mm** (460 teeth), for step 6
 - Y belt, **552 mm** (276 teeth), for step 8
@@ -507,7 +526,7 @@ The motor cable has to point up or outward, never down or toward the beam. Only 
 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/step4.png' | relative_url }}"
-       alt="Step 4: the arm head with its nuts and the servo fitted, and both 400 mm arm rods pushed into the back of the head"
+       alt="Step 4: the arm head with its nuts and the servo fitted, and both 350 mm arm rods pushed into the back of the head"
        style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
   <figcaption>Figure: The arm head with the servo and both arm rods.</figcaption>
 </figure>
@@ -515,7 +534,7 @@ The motor cable has to point up or outward, never down or toward the beam. Only 
 1. Drop a nut down each nut slot of the head and start both M3 × 10.
 1. Lower the servo into the pocket with the shaft to the front and the cable in the gap.
 1. Fix the outer servo tab with the small screw and lead the cable straight up.
-1. Push two 400 mm rods into the back sockets until they stop, and tighten. All four rods are the same, so any two will do.
+1. Push two 350 mm rods into the back sockets until they stop, and tighten. All four rods are the same, so any two will do.
 1. Leave the single-arm servo horn and its tiny screw in the bag. They go on later.
 
 The rods shouldn't pull out, and the servo shaft should sit near the middle of the head.
@@ -530,7 +549,7 @@ The rods shouldn't pull out, and the servo shaft should sit near the middle of t
   <figcaption>Figure: The carriage on the rail rods between the two X ends.</figcaption>
 </figure>
 
-1. Push the other two 400 mm rods fully into the motor end and tighten its two side screws.
+1. Push the other two 350 mm rods fully into the motor end and tighten its two side screws.
 1. Slide the carriage on, spring-finger end last, with the bearing stops and the screw boss on the side of the motor body.
 1. Push the idler end onto the rods until it stops and leave its screws loose.
 1. Press both ends flat on the table and slide the carriage from end to end.
@@ -611,7 +630,7 @@ The slider should drop freely when you lift it and let go. Keep the pen off the 
 ### Servo horn (later)
 {: .no_toc #later-servo-horn }
 
-You fit the horn in step 4 of [the converter website](#the-converter-website), once the servo has power. You need the single-arm servo horn and its tiny screw (part **23**, in the servo bag).
+You fit the horn in step 4 of [the image converter website](#the-image-converter-website), once the servo has power. You need the single-arm servo horn and its tiny screw (part **23**, in the servo bag).
 
 1. Press **Pen up** (M5) and wait until the servo has turned and holds.
 1. Lift the pen slider off the pen rail.
@@ -661,21 +680,33 @@ We added up the worst-case current of each load and picked an adapter with room 
 {: .highlight }
 > **Your project:** show every pin in your wiring diagram, and use a current table to back up your choice of power supply.
 
-## Arduino programs
 
-To switch programs, upload the other one.
+## Arduino sketches & Software Overview
 
-| | GRBL + converter page | JoystickDraw |
+Our drawing machine has two modes of operation.
+
+**Mode 1**: Draw from Image Upload. 
+- This lets you upload an image to a webtool that converts it to Gcode that the Arduino uses for automatic drawing of that image.
+- This uses the [grbl_pen.zip]({{ '/assets/files/machine-build/grbl_pen.zip' | relative_url }}) Arduino sketch and the [Image Converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }})
+
+**Mode 2**: Draw with Joystick.
+- This lets you use the joystick to manually draw an image, which you can then 'replay'; the Arduino records the joystick commands and can automatically execute the same drawing.
+- This uses only the [JoystickDraw.zip]({{ '/assets/files/machine-build/JoystickDraw.zip' | relative_url }}) Arduino sketch.
+
+To switch modes, remember that you must upload the new corresponding sketch. See the overview in the table below.
+
+| Mode | Draw from Image Upload | Draw with Joystick |
+| Files needed | GRBL + Image converter page | JoystickDraw |
 |---|---|---|
 | What it does | Turns a picture into G-code and draws it | You drive the pen with a joystick, and it can redraw what you drew |
-| Upload | Add [grbl_pen.zip]({{ '/assets/machine-build/grbl_pen.zip' | relative_url }}) with **Sketch > Include Library > Add .ZIP Library**, open **File > Examples > grbl_pen > grblPenUpload** and press **Upload** | Open `JoystickDraw.ino` from [JoystickDraw.zip]({{ '/assets/machine-build/JoystickDraw.zip' | relative_url }}) and press **Upload** |
-| Laptop side | [Converter page]({{ '/assets/machine-build/converter/' | relative_url }}) in Chrome or Edge. Universal G-code Sender (UGS) for saved `.gcode` files and typed commands (`M5`, `G0 X200`) | Serial Monitor at 115200 baud (optional) |
+| Upload | Add [grbl_pen.zip]({{ '/assets/files/machine-build/grbl_pen.zip' | relative_url }}) with **Sketch > Include Library > Add .ZIP Library**, open **File > Examples > grbl_pen > grblPenUpload** and press **Upload** | Open `JoystickDraw.ino` from [JoystickDraw.zip]({{ '/assets/files/machine-build/JoystickDraw.zip' | relative_url }}) and press **Upload** |
+| Laptop side | [Converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }}) in Chrome or Edge. Universal G-code Sender (UGS) for saved `.gcode` files and typed commands (`M5`, `G0 X200`) | Serial Monitor at 115200 baud (optional) |
 
-If **File > Examples** only shows `grblUpload` and `grblWrite_BuildInfo`, you have the original GRBL library, so add `grbl_pen.zip` first. To check the upload, open the Serial Monitor at 115200 baud and look for a line starting with `[MSG:grbl_pen`. Close the Serial Monitor before you connect the converter page.
+**Troubleshooting**: Note that if **File > Examples** only shows `grblUpload` and `grblWrite_BuildInfo`, you have the original GRBL library, so add `grbl_pen.zip` first. To check the upload, open the Serial Monitor at 115200 baud and look for a line starting with `[MSG:grbl_pen`. Close the Serial Monitor before you connect the converter page.
 
-## The converter website
+## The Image Converter website
 
-The [converter page]({{ '/assets/machine-build/converter/' | relative_url }}) is one HTML file. In Chrome or Edge on a laptop it makes the G-code and sends it to the machine over USB. In Safari or on a phone you can only download the G-code.
+The [Image Converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }}) is one HTML file. In Chrome or Edge on a laptop it makes the G-code and sends it to the machine over USB. In Safari or on a phone you can only download the G-code.
 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/pipeline.png' | relative_url }}"
@@ -732,3 +763,50 @@ The whole 260 × 240 mm work area fits on an A3 or Tabloid (11 × 17 in) s
 | JoystickDraw says "Joystick not centred" | VRx/VRy not on A4/A5, or no 5V | Check the joystick wires and press reset |
 
 </details>
+
+## Step by step: the two ways to draw
+
+The machine has two modes. Each mode is a different program on the Arduino, and the wiring is the same for both. To switch modes, upload the other program. Everything you need is written or linked on this page.
+
+### Before you start
+{: .no_toc }
+
+1. Plug the Arduino into the laptop with the USB cable. Leave the 12V adapter unplugged while you upload.
+1. In the Arduino IDE, pick **Tools > Board > Arduino AVR Boards > Arduino Uno**, then pick the Arduino's port under **Tools > Port** (`COM3` or similar on Windows, `/dev/cu.usbmodem...` on Mac).
+
+### Mode 1: Draw from Image Upload (GRBL and the converter page)
+{: .no_toc }
+
+**1. Download the library.** Download [grbl_pen.zip]({{ '/assets/files/machine-build/grbl_pen.zip' | relative_url }}). Don't unzip it.
+
+**2. Install the library.** In the Arduino IDE, choose **Sketch > Include Library > Add .ZIP Library** and pick `grbl_pen.zip`. You only do this once per laptop.
+
+**3. Upload the example code.** Choose **File > Examples > grbl_pen > grblPenUpload** and press **Upload**. A "Low memory available" warning is normal. To check it worked, open **Tools > Serial Monitor** at 115200 baud. You should see `Grbl 1.1h ['$' for help]` and `[MSG:grbl_pen: ...]`. Then close the Serial Monitor, because only one app can use the USB port at a time.
+
+**4. Open the converter page.** It is hosted on this site, so there is nothing to install. Open the [converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }}) in Chrome or Edge on a laptop. Safari, Firefox and phones can't talk to the Arduino. There you can only download the G-code.
+
+**5. Draw.** The page walks you through five numbered steps.
+
+1. At the top, keep **Pen lift + homing** selected.
+1. **1 Picture:** choose a JPG or PNG, drop it on the box, or paste it.
+1. **2 Style:** **Outline** draws clean lines. Use **Follow drawn lines** for a line drawing and **Trace around shapes** for a photo or filled shapes. **Squiggle rows** and **Scribble** shade the picture instead.
+1. **3 Size and position:** set the **Drawing width** and how far **From home** the drawing starts. It must fit inside the 260 × 240 mm work area.
+1. **4 Preview:** check the lines and the drawing time.
+1. **5 Draw on the machine:** plug in 12V, press **Connect to machine** and pick the Arduino's port. Press **Home** with a hand ready on **Stop**. Tape down the paper, press **Load pen**, fit the pen, press **Pen up**, then press **Draw**. **Pause** and **Stop** work at any time.
+
+The first time you use a machine, also do the checks in [The image converter website](#the-image-converter-website) (switches, motor directions, pen lift and the 100 mm test square).
+
+### Mode 2: Draw with Joystick (JoystickDraw)
+{: .no_toc }
+
+**1. Download the sketch.** Download [JoystickDraw.zip]({{ '/assets/files/machine-build/JoystickDraw.zip' | relative_url }}) and unzip it. Keep the `JoystickDraw` folder with `JoystickDraw.ino` inside it, because the Arduino IDE needs the folder and the file to have the same name.
+
+**2. Upload it.** Open `JoystickDraw.ino` (**File > Open**) and press **Upload**. It needs no extra library.
+
+**3. Draw.**
+
+1. Plug in 12V and click the joystick. The machine homes.
+1. Push the stick to move the pen, and click to put the pen down or lift it.
+1. Hold the button for 1.5 s and the machine redraws your path on its own.
+
+See [Joystick control](#joystick-control) for the details. To go back to Mode 1, upload **grblPenUpload** again. The library stays installed.
