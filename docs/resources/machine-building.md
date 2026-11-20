@@ -53,6 +53,8 @@ Our drawing machine has two modes of operation, demonstrated below.
 </figure>
 
 ### Automatic Drawing of Image 
+{: .no_toc }
+
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/final_auto.gif' | relative_url }}"
        alt="Animation: the machine draws a W on its own from G-code that the converter page sends"
@@ -87,6 +89,7 @@ In this section, we have used our Drawing Machine to write up many of the delive
 ## Design Objective
 
 ### Initial Sketch
+{: .no_toc }
 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/draw-machine-sketch.png' | relative_url }}"
@@ -96,10 +99,12 @@ In this section, we have used our Drawing Machine to write up many of the delive
 </figure>
 
 ### Problem or Opportunity
+{: .no_toc }
 
 Drawing a picture by hand takes skill and time, and aren't easy to copy accurately; we'd like a machine to enable this. Breaking the 4th wall for a moment, as instructors we also have a meta problem, which is identifying a device that integrates the key course topics on CAD, 3D printing, electronics and code, that can be assembled and tested during a single lab, and showcases what a machine build could look like.
 
 ### Proposed Solution
+{: .no_toc }
 
 - A 2-axis pen plotter. Two stepper motors move the pen in X and Y on GT2 belts and a servo lifts it. You upload a picture to a web page that makes G-code from it, or you draw with a joystick.
 - It's for students in this class and fits on a tabletop. It draws up to 260 × 240 mm with any pen from 6 to 21 mm thick.
@@ -110,9 +115,9 @@ Drawing a picture by hand takes skill and time, and aren't easy to copy accurate
 > **Your project:** You are welcome and encouraged to leverage any skills/techniques/tools you have learnt outside of this class and bring them to bear on the final project. It could be applying a PID controller for motor control, FEA to maximize strength-to-weight ratio of a crucial bracket, or a web framework for a user interface. Tell us what you used and how.
 
 
-## Functional Requirements
+## Functional / System Level Requirements
 
-The functional requirements of the 2D drawing machine are:
+The functional or system level requirements of the 2D drawing machine are:
 1. Accepts an image upload from user as png/jpg. _The converter page opens PNG and JPG files._
 1. Parses & thresholds image to produce G-code as a drawable, line-based representation. _It has three line styles and saves the result as a `.gcode` file._
 1. Physically draws pictures using a pen in 1 color. _Any pen from 6 to 21 mm thick._
@@ -681,9 +686,12 @@ We added up the worst-case current of each load and picked an adapter with room 
 > **Your project:** show every pin in your wiring diagram, and use a current table to back up your choice of power supply.
 
 
+
+
+
 ## Arduino sketches & Software Overview
 
-Our drawing machine has two modes of operation.
+Our drawing machine has two modes of operation. Each mode is a different program on the Arduino, and the wiring is the same for both.
 
 **Mode 1**: Draw from Image Upload. 
 - This lets you upload an image to a webtool that converts it to Gcode that the Arduino uses for automatic drawing of that image.
@@ -693,57 +701,75 @@ Our drawing machine has two modes of operation.
 - This lets you use the joystick to manually draw an image, which you can then 'replay'; the Arduino records the joystick commands and can automatically execute the same drawing.
 - This uses only the [JoystickDraw.zip]({{ '/assets/files/machine-build/JoystickDraw.zip' | relative_url }}) Arduino sketch.
 
-To switch modes, remember that you must upload the new corresponding sketch. See the overview in the table below.
+To switch modes, remember that you must upload the new corresponding sketch. See the overview in the table and the steps to use each mode below.
 
-| Mode | Draw from Image Upload | Draw with Joystick |
-| Files needed | GRBL + Image converter page | JoystickDraw |
+|  | Draw from Image Upload | Draw with Joystick |
 |---|---|---|
+| Files needed | GRBL + Image converter page | JoystickDraw |
 | What it does | Turns a picture into G-code and draws it | You drive the pen with a joystick, and it can redraw what you drew |
 | Upload | Add [grbl_pen.zip]({{ '/assets/files/machine-build/grbl_pen.zip' | relative_url }}) with **Sketch > Include Library > Add .ZIP Library**, open **File > Examples > grbl_pen > grblPenUpload** and press **Upload** | Open `JoystickDraw.ino` from [JoystickDraw.zip]({{ '/assets/files/machine-build/JoystickDraw.zip' | relative_url }}) and press **Upload** |
-| Laptop side | [Converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }}) in Chrome or Edge. Universal G-code Sender (UGS) for saved `.gcode` files and typed commands (`M5`, `G0 X200`) | Serial Monitor at 115200 baud (optional) |
+| Laptop side | [Image Converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }}) in Chrome or Edge. It sends the drawing to the machine itself. | Serial Monitor at 115200 baud (optional) |
 
-**Troubleshooting**: Note that if **File > Examples** only shows `grblUpload` and `grblWrite_BuildInfo`, you have the original GRBL library, so add `grbl_pen.zip` first. To check the upload, open the Serial Monitor at 115200 baud and look for a line starting with `[MSG:grbl_pen`. Close the Serial Monitor before you connect the converter page.
 
-## The Image Converter website
+### Before you start: the Arduino IDE
+{: .no_toc }
 
-The [Image Converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }}) is one HTML file. In Chrome or Edge on a laptop it makes the G-code and sends it to the machine over USB. In Safari or on a phone you can only download the G-code.
+1. Install the [Arduino IDE](https://www.arduino.cc/en/software) on your laptop.
+1. Plug the Arduino into the laptop with the USB cable. Leave the 12V adapter unplugged while you upload.
+1. In the Arduino IDE, pick **Tools > Board > Arduino AVR Boards > Arduino Uno**, then pick the Arduino's port under **Tools > Port** (`COM3` or similar on Windows, `/dev/cu.usbmodem...` on a Mac).
 
-<figure style="text-align: center;">
-  <img src="{{ '/assets/images/machine-build/pipeline.png' | relative_url }}"
-       alt="Five panels from a picture to a drawing: the picture, its lines, the G-code, sending over USB, and the machine drawing"
-       style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
-  <figcaption>Figure: How a picture turns into a drawing.</figcaption>
-</figure>
+### Mode 1: Draw from Image Upload (GRBL and the Image Converter page)
 
-1. Upload GRBL. In the converter page, press **Connect to machine** and pick the Arduino's port. It says "Locked" until you home, which is normal.
-1. Test the switches by pressing each lever by hand. The page should show "pressed". If it shows "pressed" all the time, a wire is loose.
-1. Move the carriage and arm to the middle by hand, plug in 12V and press **Home**, with a hand ready on **Stop**. The arm should pull in and the carriage should move toward the X motor. If an axis goes the wrong way, press **Stop**, then **Flip X direction** or **Flip Y direction** (under **Machine setup and tests**) and **Home** again.
-1. Calibrate the pen lift. You only do this once. Plug in the servo (buck converter at 5.0V) and tape down a sheet with one corner slightly outside the pen tip. Press **Pen up** and fit the servo horn ([Servo horn](#later-servo-horn)). Press **Load pen**, squeeze the yoke's tabs to open it, let the pen drop onto the paper, click the yoke shut and press **Pen up**.
-1. Press **Draw 100 mm test square** (under **Machine setup and tests**) and measure it. Each side should be 100 mm. Then load a picture, pick a line style and press **Draw**.
-
-The whole 260 × 240 mm work area fits on an A3 or Tabloid (11 × 17 in) sheet with the long side along the rail. Letter and A4 are too narrow, but you can draw smaller on them: the converter scales the picture to the **Drawing width** you set.
-
-<figure style="text-align: center;">
-  <img src="{{ '/assets/images/machine-build/homing.gif' | relative_url }}"
-       alt="Animation: the carriage and arm run to the home corner until both limit switches are pressed"
-       style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
-  <figcaption>Figure: Homing. Both axes run to their switches, and that corner becomes X0 Y0.</figcaption>
-</figure>
+1. **Download the library.** Download [grbl_pen.zip]({{ '/assets/files/machine-build/grbl_pen.zip' | relative_url }}). Don't unzip it.
+1. **Install the library.** In the Arduino IDE, choose **Sketch > Include Library > Add .ZIP Library** and pick `grbl_pen.zip`. You only do this once per laptop.
+1. **Upload the example code.** Choose **File > Examples > grbl_pen > grblPenUpload** and press **Upload**. A "Low memory available" warning is normal. If **File > Examples** only shows `grblUpload` and `grblWrite_BuildInfo`, you have the original GRBL library, so do step 2 first. To check the upload, open **Tools > Serial Monitor** at 115200 baud. You should see `Grbl 1.1h ['$' for help]` and `[MSG:grbl_pen: ...]`. Then close the Serial Monitor, because only one app can use the USB port at a time.
+1. **Open the Image Converter page.** It is hosted on this site, so there is nothing to install. Open the [Image Converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }}) in Chrome or Edge on a laptop. Safari, Firefox and phones can't talk to the Arduino. There you can only download the G-code.
+    <figure style="text-align: center;">
+      <img src="{{ '/assets/images/machine-build/pipeline.png' | relative_url }}"
+           alt="Five panels from a picture to a drawing: the picture, its lines, the G-code, sending over USB, and the machine drawing"
+           style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
+      <figcaption>Figure: How a picture turns into a drawing.</figcaption>
+    </figure>
+    {: #the-image-converter-website }
+1. **Set up the machine.** You only do this the first time you use a machine. It all happens in the page's last step, **5 Draw on the machine**. Once you connect, the flip and test square buttons are under **Machine setup and tests**.
+    1. Press **Connect to machine** and pick the Arduino's port. It says "Locked" until you home, which is normal.
+    1. Test the switches by pressing each lever by hand. The page should show "pressed". If it shows "pressed" all the time, a wire is loose.
+    1. Move the carriage and arm to the middle by hand, plug in 12V and press **Home**, with a hand ready on **Stop**. The arm should pull in and the carriage should move toward the X motor. If an axis goes the wrong way, press **Stop**, then **Flip X direction** or **Flip Y direction** and **Home** again.
+    1. Calibrate the pen lift. Plug in the servo (buck converter at 5.0V) and tape down a sheet with one corner slightly outside the pen tip. Press **Pen up** and fit the servo horn ([Servo horn](#later-servo-horn)). Press **Load pen**, squeeze the yoke's tabs to open it, let the pen drop onto the paper, click the yoke shut and press **Pen up**.
+    1. Press **Draw 100 mm test square** and measure it. Each side should be 100 mm.
+    <figure style="text-align: center;">
+      <img src="{{ '/assets/images/machine-build/homing.gif' | relative_url }}"
+          alt="Animation: the carriage and arm run to the home corner until both limit switches are pressed"
+          style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
+      <figcaption>Figure: Homing. Both axes run to their switches, and that corner becomes X0 Y0.</figcaption>
+    </figure>
+1. **Draw a picture.** The page walks you through five numbered steps.
+    1. At the top, keep **Pen lift + homing** selected.
+    1. **1 Picture:** choose a JPG or PNG, drop it on the box, or paste it.
+    1. **2 Style:** **Outline** suits line drawings. Use **Follow drawn lines** for drawn lines and **Trace around shapes** for filled shapes such as a logo. For a photo, use **Squiggle rows** or **Scribble**, which shade the picture.
+    1. **3 Size and position:** set the **Drawing width** and how far **From home** the drawing starts. It must fit inside the 260 × 240 mm work area, which fits on an A3 or Tabloid (11 × 17 in) sheet with the long side along the rail. Letter and A4 are too narrow, but you can draw smaller on them.
+    1. **4 Preview:** check the lines and the drawing time.
+    1. **5 Draw on the machine:** plug in 12V, press **Connect to machine** and pick the Arduino's port. Press **Home** with a hand ready on **Stop**. Tape down the paper with one corner just outside the pen tip, press **Load pen**, fit the pen, press **Pen up**, then press **Draw**. **Stop** works at any time, and **Pause** while it draws.
 
 <figure style="text-align: center;">
   <img src="{{ '/assets/images/machine-build/converter.png' | relative_url }}"
        alt="Screenshot of the converter page with a line drawing of a house and sun turned into pen strokes inside the machine's work area, and the machine connected, homed and ready to draw"
        style="display: block; max-width: 90%; height: auto; margin: 0 auto;">
-  <figcaption>Figure: The converter page, connected and homed, with a picture ready to draw.</figcaption>
+  <figcaption>Figure: The Image Converter page, connected and homed, with a picture ready to draw.</figcaption>
 </figure>
 
-## Joystick control
+### Mode 2: Draw with Joystick (JoystickDraw)
+{: #joystick-control }
 
-{: style="break-inside: avoid;" }
-1. Upload JoystickDraw and click the joystick to home.
-1. Push the stick to move. The further you push, the faster it goes, up to 40 mm/s. Click for pen down or pen up.
-1. Hold the button for 1.5 s to redraw your path (up to 300 corners). The machine goes home when it's done, and a click stops it. The Serial Monitor prints the path as G-code, so you can save it as a `.gcode` file and draw it again with GRBL and UGS.
-1. If an axis homes the wrong way, unplug 12V, set `FLIP_X` or `FLIP_Y` to `true` at the top of the sketch and upload again. If the stick feels mirrored, set `STICK_FLIP_X` or `STICK_FLIP_Y`.
+1. **Download the sketch.** Download [JoystickDraw.zip]({{ '/assets/files/machine-build/JoystickDraw.zip' | relative_url }}) and unzip it. Keep the `JoystickDraw` folder with `JoystickDraw.ino` inside it, because the Arduino IDE needs the folder and the file to have the same name.
+1. **Upload it.** Unplug 12V. If the Image Converter page is still connected, press **Disconnect** there, because only one app can use the USB port at a time. Open `JoystickDraw.ino` (**File > Open**). If you pressed **Flip X direction** or **Flip Y direction** in Mode 1, set `FLIP_X` or `FLIP_Y` to `true` for that axis at the top of the sketch. Then press **Upload**. It needs no extra library.
+1. **Draw:**
+    1. Plug in 12V and click the joystick. The machine homes.
+    1. Push the stick to move. The further you push, the faster it goes, up to 40 mm/s. Click to put the pen down or lift it.
+    1. Put in a fresh sheet, then hold the button for 1.5 s. The machine redraws your path on its own (up to 300 corners). It goes home when it's done, and a click stops it. The Serial Monitor also prints the path as G-code, so you can copy it and keep it. Open it at 115200 baud before you home. Opening it restarts the Arduino, which clears the path and the homing.
+    1. If an axis homes the wrong way, unplug 12V, set `FLIP_X` or `FLIP_Y` to `true` at the top of the sketch and upload again. If the stick feels mirrored, set `STICK_FLIP_X` or `STICK_FLIP_Y`.
+
+To go back to Mode 1, upload **grbl_pen** again. The library stays installed.
 
 <details markdown="block">
   <summary>
@@ -756,57 +782,10 @@ The whole 260 × 240 mm work area fits on an A3 or Tabloid (11 × 17 in) s
 | "Locked" or `error:9` | Not homed yet | Press **Home** |
 | `ALARM:9` after Home | An axis ran away from its switch, there's no 12V, or the lever never gets pressed | Flip that axis, and check 12V and the switch position |
 | `ALARM:8` after Home | A switch reads pressed all the time | Wire terminal 1 to ground and terminal 2 to the pin |
-| The pen doesn't lift, or hangs above the paper at Pen down | The horn is one spline tooth off | Refit the horn one tooth up or down, or raise **Pen down value (S)** (converter page, under **More settings**) |
+| The pen doesn't lift, or hangs above the paper at Pen down | The horn is one spline tooth off | Refit the horn one tooth up or down, or raise **Pen down value (S)** (Image Converter page, under **More settings**) |
 | A motor buzzes but doesn't turn | Coil wires mixed up | Black A1, Blue A2, Green B1, Red B2 |
 | The drawing shifts part-way | Slack belt, loose pulley or snagged cable | Tension the belt and tighten the pulley set screws |
 | The Arduino resets when the pen moves | Servo powered from the Arduino | Power the servo from the buck converter |
 | JoystickDraw says "Joystick not centred" | VRx/VRy not on A4/A5, or no 5V | Check the joystick wires and press reset |
 
 </details>
-
-## Step by step: the two ways to draw
-
-The machine has two modes. Each mode is a different program on the Arduino, and the wiring is the same for both. To switch modes, upload the other program. Everything you need is written or linked on this page.
-
-### Before you start
-{: .no_toc }
-
-1. Plug the Arduino into the laptop with the USB cable. Leave the 12V adapter unplugged while you upload.
-1. In the Arduino IDE, pick **Tools > Board > Arduino AVR Boards > Arduino Uno**, then pick the Arduino's port under **Tools > Port** (`COM3` or similar on Windows, `/dev/cu.usbmodem...` on Mac).
-
-### Mode 1: Draw from Image Upload (GRBL and the converter page)
-{: .no_toc }
-
-**1. Download the library.** Download [grbl_pen.zip]({{ '/assets/files/machine-build/grbl_pen.zip' | relative_url }}). Don't unzip it.
-
-**2. Install the library.** In the Arduino IDE, choose **Sketch > Include Library > Add .ZIP Library** and pick `grbl_pen.zip`. You only do this once per laptop.
-
-**3. Upload the example code.** Choose **File > Examples > grbl_pen > grblPenUpload** and press **Upload**. A "Low memory available" warning is normal. To check it worked, open **Tools > Serial Monitor** at 115200 baud. You should see `Grbl 1.1h ['$' for help]` and `[MSG:grbl_pen: ...]`. Then close the Serial Monitor, because only one app can use the USB port at a time.
-
-**4. Open the converter page.** It is hosted on this site, so there is nothing to install. Open the [converter page]({{ '/assets/files/machine-build/Image_to_Gcode_tool/index.html' | relative_url }}) in Chrome or Edge on a laptop. Safari, Firefox and phones can't talk to the Arduino. There you can only download the G-code.
-
-**5. Draw.** The page walks you through five numbered steps.
-
-1. At the top, keep **Pen lift + homing** selected.
-1. **1 Picture:** choose a JPG or PNG, drop it on the box, or paste it.
-1. **2 Style:** **Outline** draws clean lines. Use **Follow drawn lines** for a line drawing and **Trace around shapes** for a photo or filled shapes. **Squiggle rows** and **Scribble** shade the picture instead.
-1. **3 Size and position:** set the **Drawing width** and how far **From home** the drawing starts. It must fit inside the 260 × 240 mm work area.
-1. **4 Preview:** check the lines and the drawing time.
-1. **5 Draw on the machine:** plug in 12V, press **Connect to machine** and pick the Arduino's port. Press **Home** with a hand ready on **Stop**. Tape down the paper, press **Load pen**, fit the pen, press **Pen up**, then press **Draw**. **Pause** and **Stop** work at any time.
-
-The first time you use a machine, also do the checks in [The image converter website](#the-image-converter-website) (switches, motor directions, pen lift and the 100 mm test square).
-
-### Mode 2: Draw with Joystick (JoystickDraw)
-{: .no_toc }
-
-**1. Download the sketch.** Download [JoystickDraw.zip]({{ '/assets/files/machine-build/JoystickDraw.zip' | relative_url }}) and unzip it. Keep the `JoystickDraw` folder with `JoystickDraw.ino` inside it, because the Arduino IDE needs the folder and the file to have the same name.
-
-**2. Upload it.** Open `JoystickDraw.ino` (**File > Open**) and press **Upload**. It needs no extra library.
-
-**3. Draw.**
-
-1. Plug in 12V and click the joystick. The machine homes.
-1. Push the stick to move the pen, and click to put the pen down or lift it.
-1. Hold the button for 1.5 s and the machine redraws your path on its own.
-
-See [Joystick control](#joystick-control) for the details. To go back to Mode 1, upload **grblPenUpload** again. The library stays installed.

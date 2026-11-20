@@ -181,7 +181,7 @@ There is 1 deliverable:
 
 To submit your CoDR, document it under a "CoDR" heading on your Group's Google Site, then publish it. Remember: You must transfer ownership to Martin _and_ publish your website for your submission to be complete. 
 
-See below for the sections required for **each of the three project proposals**.
+See below for the sections required for **each of the three project proposals**. You can also see the [Machine Building]({{ '/docs/resources/machine-building/' | relative_url }}) page for examples of many deliverables.
 
 ---
 
