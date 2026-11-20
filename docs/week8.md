@@ -68,13 +68,13 @@ This week we'll also provide a Machine Building kit with pre-printed parts and a
 
 This lab will have the following activities:
 
-1. Machine Building exercise. See the [Machine Building]({{ '/docs/resources/machine-building/' | relative_url }}) for detailed instructions of what to do in the lab.
+1. Machine Building exercise. See the _Assembly Instructions_ section of the [Machine Building]({{ '/docs/resources/machine-building/' | relative_url }}) page for detailed instructions of what to do in the lab.
 1. Staff meeting to review your published CoDR and select a Final Project.
 
 
 #### What to do in the lab
 
-1. We will disburse kits with the additional components required to complete the machine building exercise. Working in groups, assemble your machine and demonstrate operating it in both of its modes (image upload and joystick). Reference the [Machine Building]({{ '/docs/resources/machine-building/' | relative_url }}) page for detailed instructions on how to assemble the machine and operate it.  
+1. We will disburse kits with the additional components required to complete the machine building exercise. Working in groups, assemble your machine and demonstrate operating it in both of its modes (image upload and joystick). Reference the _Assembly Instructions_ section of the [Machine Building]({{ '/docs/resources/machine-building/' | relative_url }}) page for detailed instructions on how to assemble the machine and operate it.  
 1. During the machine building exercise, the staff will call on one group at a time to discuss your CoDR with you and help select a final project.
 1. Reserve a few minutes with your final project group to review the PDR assignment below and coordinate on next steps.
 
