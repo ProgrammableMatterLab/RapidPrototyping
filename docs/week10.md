@@ -56,7 +56,12 @@ description: >-
 - *PEER REVIEW*{: .text-red-300 }
 - *Final Build & Presentation*{: .text-red-300 }
 
+Work on the final build should also address outstanding reliability issues and result in a polished appearance.
 
+.....ALso final documentation (including finalization of Group website, including home page) for the published website.......And presentation preparation.
+
+- Integration: report Final BoM used, annotated CAD Assembly, photo of physical device 
+- Demo: explanation / interaction, video/gif
 
 ### Final Build & Presentation
 

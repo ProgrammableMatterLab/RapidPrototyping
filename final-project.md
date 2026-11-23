@@ -31,27 +31,32 @@ The final project will involve designing, fabricating, assembling, and programmi
 Please see below for the Final Project Groups, with contact details so you can coordinate with each other.
 
 #### Group 1
+- [Group 1 website](https://sites.google.com/uw.edu/aa598-aut26-group-1).
 - John Michael Racy,	_jmracy@uw.edu_
 - Griff Ahnert,    _jahnert@uw.edu_
 - Julius Naehrig,	_jnaehrig@uw.edu_
 - Alexander Chin,	_awchin@uw.edu_
 
 #### Group 2
+- [Group 2 website](https://sites.google.com/uw.edu/aa598-aut26-group-2).
 - Kira Seshaiah,	_kiras5@uw.edu_
 - Brian Huang,	_bah0131@uw.edu_
 - Ethan Bailes,	_ebailes@uw.edu_
 
 #### Group 3
+- [Group 3 website](https://sites.google.com/uw.edu/aa598-aut26-group-3).
 - Jonathan Li,	_jli2022@uw.edu_
 - Kendall Trellue,	_ktrell4@uw.edu_
 - Patrick Rae,	_ptr123@uw.edu_
 
 #### Group 4
+- [Group 4 website](https://sites.google.com/uw.edu/aa598-aut26-group-4).
 - Melissa May,	_mkmay4@uw.edu_
 - Jessica Romero,	_jessijov@uw.edu_
 - Rana Hasan,	_rhasan15@uw.edu_
 
 #### Group 5
+- [Group 5 website](https://sites.google.com/uw.edu/aa598-aut26-group-5).
 - Nathan Watje,	_nwatje@uw.edu_
 - Yifu Wang,	_wangy242@uw.edu_
 - Shawn Meyer,	_shawnm27@uw.edu_

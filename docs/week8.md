@@ -158,7 +158,8 @@ _Your chief goal for this assignment is to prototype this part as well as possib
 The work you should do depends strongly on the risk you've identified:
 - If it's a highly complicated mechanism, you may wish to focus the whole teams' efforts on rapidly prototyping that mechanism physically using laser cutting, and actuate it manually without electronics. If its geometry requires it to be 3D printed, you might choose to focus only on modeling it in CAD, applying constraints, and animating it, without any fabrication. 
 - If it's a complicated bit of code or untested algorithm, you may want to focus exclusively on that, using just Arduino and the serial monitor to debug, without building any electronics unless also required.  
-- Your risk may be spread across both code, electronics, and mechanical design. The key take-away is that you should focus your group's efforts on prototyping the critical part(s) of your project, to as high fidelity as possible, to help you determine as early as possible whether to re-scope. 
+- Your risk may be spread across both code, electronics, and mechanical design. The key take-away is that you should focus your group's efforts on prototyping the critical part(s) of your project, to as high fidelity as possible, to help you determine as early as possible whether to re-scope.
+- If your risk relies on an **Extended BoM**, you will need to think carefully whether you can test it without those components and update your Gantt chart accordingly; if we are able to order components, it may take 5 business days to have them in hand, even without shipping delays.  
 
 ##### What to document for the critical feature prototype in your PDR
 

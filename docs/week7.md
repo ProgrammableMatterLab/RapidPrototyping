@@ -244,7 +244,7 @@ Identify a BoM that makes use only of class components and materials. Provide a 
 Optionally, identify and request an extended BoM beyond the class materials/components. Note that these are not guaranteed. Provide a table with: 
 1. The item name (e.g. Stepper motors, or black PLA)
 1. How many units of each item; for example 3x (stepper motors); or 1kg (Black PLA)
-1. An Amazon link for purchasing
+1. An Amazon link for purchasing. They must be on Prime delivery and not be stock-limited.
 1. The unit cost from Amazon
 1. A justification for each item
 1. The total cost of the Extended BoM
